@@ -31,7 +31,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. An extraction rubric exists that specifies what to extract from a screenshot, in what format, and how to quantize values
   4. Platform output specifications exist for React/Tailwind and SwiftUI, defining what files each generator must produce
   5. Any two agents using these contracts produce output that can be consumed by the next stage without structure negotiation
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 01-01-PLAN.md — Analysis agent contracts (extraction rubric + findings schema + JSON Schema)
+- [ ] 01-02-PLAN.md — Design system contracts (token schema spec + JSON Schema)
+- [ ] 01-03-PLAN.md — Platform output specifications (React/Tailwind + SwiftUI file manifests)
 
 ### Phase 2: Analysis Agent
 **Goal**: A single screenshot produces a schema-conformant structured findings JSON through Claude's vision
@@ -97,7 +100,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Schema Contracts | 0/TBD | Not started | - |
+| 1. Schema Contracts | 0/3 | Planned | - |
 | 2. Analysis Agent | 0/TBD | Not started | - |
 | 3. Synthesizer Agent | 0/TBD | Not started | - |
 | 4. Platform Generators | 0/TBD | Not started | - |
