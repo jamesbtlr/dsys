@@ -60,7 +60,10 @@ Plans:
   2. The design-system.json contains an aesthetic summary and dominant approach declaration — not an average of inputs
   3. Conflicts between benchmarks (e.g. two different blues) are resolved with an explicit logged choice, not silently blended
   4. The intermediate design-system.json is written to disk and is human-inspectable before generators run
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 03-01-PLAN.md — Synthesizer agent prompt (merge algorithm, conflict resolution, output template)
+- [ ] 03-02-PLAN.md — E2E validation (run synthesizer on test finding, schema validation, output inspection)
 
 ### Phase 4: Platform Generators
 **Goal**: design-system.json is transformed into drop-in project files for React/Tailwind and SwiftUI
@@ -105,7 +108,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Schema Contracts | 0/3 | Complete    | 2026-02-17 |
 | 2. Analysis Agent | 0/2 | Complete    | 2026-02-17 |
-| 3. Synthesizer Agent | 0/TBD | Not started | - |
+| 3. Synthesizer Agent | 0/2 | In progress | - |
 | 4. Platform Generators | 0/TBD | Not started | - |
 | 5. Rules and Style Guide | 0/TBD | Not started | - |
 | 6. Orchestrator and Command | 0/TBD | Not started | - |
