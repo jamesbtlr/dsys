@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-17)
 ## Current Position
 
 Phase: 1 of 6 (Schema Contracts)
-Plan: 2 of TBD in current phase
+Plan: 3 of TBD in current phase
 Status: In progress
-Last activity: 2026-02-17 — Completed 01-02 (design-system.json schema)
+Last activity: 2026-02-17 — Completed 01-03 (platform output specs: React/Tailwind + SwiftUI)
 
-Progress: [██░░░░░░░░] ~5%
+Progress: [███░░░░░░░] ~8%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: ~6 min
-- Total execution time: ~12 min
+- Total plans completed: 3
+- Average duration: ~5 min
+- Total execution time: ~16 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-schema-contracts | 2 | ~12 min | ~6 min |
+| 01-schema-contracts | 3 | ~16 min | ~5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (research, ~6 min), 01-02 (schema, ~6 min)
+- Last 5 plans: 01-01 (research, ~6 min), 01-02 (schema, ~6 min), 01-03 (platform specs, ~4 min)
 - Trend: Steady
 
 *Updated after each plan completion*
@@ -53,6 +53,12 @@ Recent decisions affecting current work:
 - shadow and opacity use type ["array","null"] / ["object","null"] — explicit null for "not found", never absent key
 - dimensionToken $value uses px suffix string (e.g. "16px") not bare number — matches DTCG spec and Style Dictionary v5
 - semanticColorToken requires $description — documents intent on every role-based token
+- React/Tailwind theme.css must have --color-*: initial; as first @theme declaration — resets full Tailwind default palette, makes design system enforceable
+- tokens.css uses --ds- prefix; theme.css maps @theme names to --ds- vars — separation enables runtime theme-switching without Tailwind rebuild
+- SwiftUI colors must use Color(name:bundle:.module) referencing asset catalog — never Color(hex:); asset catalog provides automatic OS-managed dark mode
+- DSSpacing uses @ScaledMetric instance properties (not static) for Dynamic Type support
+- SwiftUI components prefixed DS (DSButton, DSCard) to avoid collision with SwiftUI built-in view names
+- iOS 16 minimum target chosen for SwiftUI generator (NavigationStack, complete @ScaledMetric, Color(named:) support)
 
 ### Pending Todos
 
@@ -61,11 +67,11 @@ None.
 ### Blockers/Concerns
 
 - Phase 2 (Analyzer): Prompt engineering for design-intent extraction vs. pixel measurement needs empirical testing — cannot be fully designed in the abstract
-- Phase 4 (SwiftUI generator): iOS minimum version API surface needs verification before writing generator prompt; wrong version produces broken output
-- Style Dictionary v5 {light, dark} $value handling: requires custom preprocess step in Style Dictionary config — must be documented in platform-specs (remaining Phase 1 plans)
+- Style Dictionary v5 {light, dark} $value handling: LOW confidence on exact behavior; requires empirical testing before Phase 4 React generator is finalized; custom preprocess step is likely required
+- Phase 4 (SwiftUI generator) iOS target concern RESOLVED: iOS 16 chosen and documented in swiftui-spec.md
 
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Completed 01-01-PLAN.md (analysis findings schema, extraction rubric, human-readable spec)
+Stopped at: Completed 01-03-PLAN.md (platform output specs: React/Tailwind + SwiftUI)
 Resume file: None
