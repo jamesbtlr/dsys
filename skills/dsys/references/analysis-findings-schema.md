@@ -130,6 +130,37 @@ Each entry in the `shadows` array represents one elevation tier observed in the 
 
 ---
 
+### Rationale Object
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `rationale` | `object` | No | Optional. Brief rationale strings for semantic color assignments, keyed by the semantic key name (e.g., `action_primary`). Explains why each role was assigned to help the synthesizer resolve conflicts. Values are plain strings. |
+
+The `rationale` object uses the same key names as `colors.semantic_assignments`. Not all keys need entries — include only the assignments where the reasoning adds value (ambiguous choices, inferred values, alternate interpretations). The synthesizer uses these strings to resolve conflicts when multiple findings disagree on a semantic role.
+
+Example:
+```json
+"rationale": {
+  "action_primary": "Appears on all CTA buttons and the primary navigation highlight",
+  "surface_default": "Page background: the lightest surface color covering most of the viewport"
+}
+```
+
+---
+
+### Partial Failure Fields
+
+These fields are set programmatically by the agent when it cannot extract some token categories. They are **not** pre-filled in the output template.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `partial_failure` | `boolean` | No | `true` if some token categories could not be extracted and were set to `null`. Absent or `false` if all categories were successfully extracted. |
+| `failed_categories` | `string[]` | No | Names of token categories that could not be extracted (e.g., `["typography", "shadows"]`). Present only when `partial_failure` is `true`. |
+
+When `partial_failure` is `true` for a `ui_screenshot`, `typography` and `spacing` may be `null` for the categories listed in `failed_categories`. This overrides the normal requirement that `ui_screenshot` documents include non-null `typography` and `spacing` objects.
+
+---
+
 ## Image Type Conditional Fields
 
 The `image_type` field determines which fields contain meaningful values:
@@ -258,6 +289,11 @@ The analyzer agent fills in the following template. All placeholder values must 
     "personality_tags": ["minimal", "trustworthy", "precise", "corporate"],
     "density": "compact | comfortable | spacious",
     "tone": "minimal | expressive | corporate | playful | bold | elegant"
+  },
+
+  "rationale": {
+    "action_primary": "Appears on all CTA buttons and the primary navigation highlight",
+    "surface_default": "Page background: the lightest surface color covering most of the viewport"
   }
 }
 ```
@@ -311,7 +347,9 @@ The analyzer agent fills in the following template. All placeholder values must 
     "personality_tags": ["warm", "organic", "bold", "editorial"],
     "density": "compact | comfortable | spacious",
     "tone": "minimal | expressive | corporate | playful | bold | elegant"
-  }
+  },
+
+  "rationale": {}
 }
 ```
 

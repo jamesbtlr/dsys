@@ -282,6 +282,23 @@
           "description": "Dominant aesthetic tone."
         }
       }
+    },
+
+    "rationale": {
+      "type": "object",
+      "description": "Brief rationale strings for semantic color assignments, keyed by the semantic key name (e.g., action_primary). Explains why each role was assigned to help the synthesizer resolve conflicts.",
+      "additionalProperties": { "type": "string" }
+    },
+
+    "partial_failure": {
+      "type": "boolean",
+      "description": "true if some token categories could not be extracted and were set to null. false or absent if all categories were successfully extracted."
+    },
+
+    "failed_categories": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Names of token categories that could not be extracted (e.g., ['typography', 'shadows']). Present only when partial_failure is true."
     }
   },
 
@@ -313,6 +330,22 @@
         "properties": {
           "typography": { "type": "object" },
           "spacing":    { "type": "object" }
+        }
+      }
+    },
+    {
+      "description": "When partial_failure is true for a ui_screenshot, typography and spacing may be null (overrides the ui_screenshot object requirement for fields listed in failed_categories).",
+      "if": {
+        "properties": {
+          "image_type":       { "const": "ui_screenshot" },
+          "partial_failure":  { "const": true }
+        },
+        "required": ["image_type", "partial_failure"]
+      },
+      "then": {
+        "properties": {
+          "typography": { "type": ["object", "null"] },
+          "spacing":    { "type": ["object", "null"] }
         }
       }
     }
