@@ -46,7 +46,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Extracted color palette reflects design intent (named semantic roles, quantized to standard values) not raw pixel samples
   4. Extracted typography tokens (family, weight, size scale, line-height) are snapped to standard values, not raw rendered measurements
   5. Extracted spacing tokens are snapped to a 4px grid with semantic tier labels, not raw pixel distances
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 02-01-PLAN.md — Schema extension (rationale + partial failure fields) and analyzer agent prompt
+- [ ] 02-02-PLAN.md — Schema validation, agent testing, and user review checkpoint
 
 ### Phase 3: Synthesizer Agent
 **Goal**: N analysis findings are merged into one canonical design-system.json with a clear aesthetic identity
@@ -101,7 +104,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Schema Contracts | 0/3 | Complete    | 2026-02-17 |
-| 2. Analysis Agent | 0/TBD | Not started | - |
+| 2. Analysis Agent | 0/2 | Not started | - |
 | 3. Synthesizer Agent | 0/TBD | Not started | - |
 | 4. Platform Generators | 0/TBD | Not started | - |
 | 5. Rules and Style Guide | 0/TBD | Not started | - |
