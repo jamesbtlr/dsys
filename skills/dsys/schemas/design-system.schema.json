@@ -1,0 +1,612 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsys-tool/schemas/design-system.schema.json",
+  "title": "DesignSystem",
+  "description": "JSON Schema 2020-12 for design-system.json — the intermediate artifact between analysis findings and platform generation. Written by the synthesizer agent, consumed by generator agents.",
+  "type": "object",
+  "required": ["meta", "tokens", "aesthetic", "platform_notes"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": [
+        "generated_at",
+        "source_count",
+        "source_types",
+        "aesthetic_summary",
+        "dominant_approach",
+        "conflict_log"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "generated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "UTC datetime when synthesis completed. ISO 8601 format."
+        },
+        "source_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of benchmark images analyzed."
+        },
+        "source_types": {
+          "type": "object",
+          "required": ["ui_screenshots", "visual_references"],
+          "additionalProperties": false,
+          "properties": {
+            "ui_screenshots": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Count of sources classified as ui_screenshot."
+            },
+            "visual_references": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Count of sources classified as visual_reference."
+            }
+          }
+        },
+        "aesthetic_summary": {
+          "type": "string",
+          "minLength": 20,
+          "description": "2-3 sentences summarizing the dominant aesthetic across all benchmarks."
+        },
+        "dominant_approach": {
+          "type": "string",
+          "minLength": 10,
+          "description": "One-line label for the design approach. Example: 'Clean SaaS with blue accent'."
+        },
+        "conflict_log": {
+          "type": "array",
+          "description": "Records synthesis decisions where benchmarks produced conflicting values. Always present; empty array if no conflicts.",
+          "items": {
+            "type": "object",
+            "required": ["token", "candidates", "chosen", "rationale"],
+            "additionalProperties": false,
+            "properties": {
+              "token": {
+                "type": "string",
+                "description": "Dot-notation token path, e.g. 'tokens.color.semantic.action.primary'."
+              },
+              "candidates": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "string"
+                },
+                "description": "All candidate values from source images."
+              },
+              "chosen": {
+                "type": "string",
+                "description": "The value the synthesizer selected."
+              },
+              "rationale": {
+                "type": "string",
+                "description": "Why this value was chosen."
+              }
+            }
+          }
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "required": ["color", "typography", "spacing", "shadow", "border_radius", "opacity"],
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "type": "object",
+          "required": ["primitive", "semantic"],
+          "additionalProperties": false,
+          "properties": {
+            "primitive": {
+              "type": "object",
+              "description": "Raw color palette grouped by hue family. Used only to define palette values — never referenced directly by components.",
+              "properties": {
+                "$type": {
+                  "type": "string",
+                  "const": "color",
+                  "description": "Group-level type declaration inherited by all children."
+                }
+              },
+              "additionalProperties": {
+                "oneOf": [
+                  {
+                    "description": "A hue-family group containing numeric shade steps.",
+                    "type": "object",
+                    "properties": {
+                      "$type": { "type": "string", "const": "color" },
+                      "$description": { "type": "string" }
+                    },
+                    "additionalProperties": {
+                      "$ref": "#/$defs/colorToken"
+                    }
+                  },
+                  {
+                    "description": "A standalone color token (e.g., white, black).",
+                    "$ref": "#/$defs/colorToken"
+                  }
+                ]
+              }
+            },
+            "semantic": {
+              "type": "object",
+              "description": "Role-based color tokens. Each token's $value is theme-aware: either a flat hex string or a {light, dark} object referencing primitives.",
+              "properties": {
+                "$type": {
+                  "type": "string",
+                  "const": "color",
+                  "description": "Group-level type declaration inherited by all children."
+                },
+                "action": {
+                  "type": "object",
+                  "required": ["primary", "secondary", "destructive"],
+                  "properties": {
+                    "primary": { "$ref": "#/$defs/semanticColorToken" },
+                    "secondary": { "$ref": "#/$defs/semanticColorToken" },
+                    "destructive": { "$ref": "#/$defs/semanticColorToken" }
+                  },
+                  "additionalProperties": { "$ref": "#/$defs/semanticColorToken" }
+                },
+                "surface": {
+                  "type": "object",
+                  "required": ["default", "raised", "overlay", "inset"],
+                  "properties": {
+                    "default": { "$ref": "#/$defs/semanticColorToken" },
+                    "raised": { "$ref": "#/$defs/semanticColorToken" },
+                    "overlay": { "$ref": "#/$defs/semanticColorToken" },
+                    "inset": { "$ref": "#/$defs/semanticColorToken" }
+                  },
+                  "additionalProperties": { "$ref": "#/$defs/semanticColorToken" }
+                },
+                "text": {
+                  "type": "object",
+                  "required": ["primary", "secondary", "muted", "inverse", "link"],
+                  "properties": {
+                    "primary": { "$ref": "#/$defs/semanticColorToken" },
+                    "secondary": { "$ref": "#/$defs/semanticColorToken" },
+                    "muted": { "$ref": "#/$defs/semanticColorToken" },
+                    "inverse": { "$ref": "#/$defs/semanticColorToken" },
+                    "link": { "$ref": "#/$defs/semanticColorToken" }
+                  },
+                  "additionalProperties": { "$ref": "#/$defs/semanticColorToken" }
+                },
+                "border": {
+                  "type": "object",
+                  "required": ["default", "focus"],
+                  "properties": {
+                    "default": { "$ref": "#/$defs/semanticColorToken" },
+                    "focus": { "$ref": "#/$defs/semanticColorToken" }
+                  },
+                  "additionalProperties": { "$ref": "#/$defs/semanticColorToken" }
+                },
+                "feedback": {
+                  "type": "object",
+                  "required": ["success", "error", "warning", "info"],
+                  "properties": {
+                    "success": { "$ref": "#/$defs/semanticColorToken" },
+                    "error": { "$ref": "#/$defs/semanticColorToken" },
+                    "warning": { "$ref": "#/$defs/semanticColorToken" },
+                    "info": { "$ref": "#/$defs/semanticColorToken" }
+                  },
+                  "additionalProperties": { "$ref": "#/$defs/semanticColorToken" }
+                }
+              },
+              "required": ["action", "surface", "text", "border", "feedback"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "typography": {
+          "type": "object",
+          "required": ["font_family", "scale", "weight", "line_height"],
+          "additionalProperties": false,
+          "properties": {
+            "font_family": {
+              "type": "object",
+              "description": "Font family tokens. Each key is a role (sans, mono, display). null if that role was not observed in benchmarks.",
+              "properties": {
+                "sans": {
+                  "oneOf": [
+                    { "$ref": "#/$defs/fontFamilyToken" },
+                    { "type": "null" }
+                  ]
+                },
+                "mono": {
+                  "oneOf": [
+                    { "$ref": "#/$defs/fontFamilyToken" },
+                    { "type": "null" }
+                  ]
+                },
+                "display": {
+                  "oneOf": [
+                    { "$ref": "#/$defs/fontFamilyToken" },
+                    { "type": "null" }
+                  ]
+                }
+              },
+              "required": ["sans", "mono", "display"],
+              "additionalProperties": false
+            },
+            "scale": {
+              "type": "object",
+              "description": "Type size steps in DTCG dimension format. Keys: xs, sm, base, lg, xl, 2xl, 3xl, 4xl, 5xl.",
+              "properties": {
+                "$type": { "type": "string", "const": "dimension" }
+              },
+              "required": ["xs", "sm", "base", "lg", "xl", "2xl", "3xl", "4xl", "5xl"],
+              "properties": {
+                "$type": { "type": "string", "const": "dimension" },
+                "xs":   { "$ref": "#/$defs/dimensionToken" },
+                "sm":   { "$ref": "#/$defs/dimensionToken" },
+                "base": { "$ref": "#/$defs/dimensionToken" },
+                "lg":   { "$ref": "#/$defs/dimensionToken" },
+                "xl":   { "$ref": "#/$defs/dimensionToken" },
+                "2xl":  { "$ref": "#/$defs/dimensionToken" },
+                "3xl":  { "$ref": "#/$defs/dimensionToken" },
+                "4xl":  { "$ref": "#/$defs/dimensionToken" },
+                "5xl":  { "$ref": "#/$defs/dimensionToken" }
+              },
+              "additionalProperties": { "$ref": "#/$defs/dimensionToken" }
+            },
+            "weight": {
+              "type": "object",
+              "description": "Font weight steps. Keys: regular, medium, semibold, bold.",
+              "required": ["regular", "medium", "semibold", "bold"],
+              "properties": {
+                "$type": { "type": "string", "const": "fontWeight" },
+                "regular":  { "$ref": "#/$defs/fontWeightToken" },
+                "medium":   { "$ref": "#/$defs/fontWeightToken" },
+                "semibold": { "$ref": "#/$defs/fontWeightToken" },
+                "bold":     { "$ref": "#/$defs/fontWeightToken" }
+              },
+              "additionalProperties": { "$ref": "#/$defs/fontWeightToken" }
+            },
+            "line_height": {
+              "type": "object",
+              "description": "Unitless line-height multipliers. Keys: tight, normal, relaxed, loose.",
+              "required": ["tight", "normal", "relaxed", "loose"],
+              "properties": {
+                "$type": { "type": "string", "const": "number" },
+                "tight":   { "$ref": "#/$defs/numberToken" },
+                "normal":  { "$ref": "#/$defs/numberToken" },
+                "relaxed": { "$ref": "#/$defs/numberToken" },
+                "loose":   { "$ref": "#/$defs/numberToken" }
+              },
+              "additionalProperties": { "$ref": "#/$defs/numberToken" }
+            }
+          }
+        },
+        "spacing": {
+          "type": "object",
+          "required": ["base_unit", "scale"],
+          "additionalProperties": false,
+          "properties": {
+            "base_unit": {
+              "type": "number",
+              "enum": [4, 8],
+              "description": "The grid base unit in pixels. All scale values are multiples of this."
+            },
+            "scale": {
+              "type": "object",
+              "description": "Numeric step scale. Keys are integers (1, 2, 3, ...) representing multiples of base_unit.",
+              "required": ["1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24", "32"],
+              "properties": {
+                "$type": { "type": "string", "const": "dimension" },
+                "1":  { "$ref": "#/$defs/dimensionToken" },
+                "2":  { "$ref": "#/$defs/dimensionToken" },
+                "3":  { "$ref": "#/$defs/dimensionToken" },
+                "4":  { "$ref": "#/$defs/dimensionToken" },
+                "5":  { "$ref": "#/$defs/dimensionToken" },
+                "6":  { "$ref": "#/$defs/dimensionToken" },
+                "8":  { "$ref": "#/$defs/dimensionToken" },
+                "10": { "$ref": "#/$defs/dimensionToken" },
+                "12": { "$ref": "#/$defs/dimensionToken" },
+                "16": { "$ref": "#/$defs/dimensionToken" },
+                "20": { "$ref": "#/$defs/dimensionToken" },
+                "24": { "$ref": "#/$defs/dimensionToken" },
+                "32": { "$ref": "#/$defs/dimensionToken" }
+              },
+              "additionalProperties": { "$ref": "#/$defs/dimensionToken" }
+            },
+            "semantic": {
+              "type": "object",
+              "description": "Named spacing tokens for common layout patterns. Each token references a scale step.",
+              "properties": {
+                "$type": { "type": "string", "const": "dimension" },
+                "component-gap":   { "$ref": "#/$defs/dimensionTokenWithDescription" },
+                "section-padding": { "$ref": "#/$defs/dimensionTokenWithDescription" },
+                "page-margin":     { "$ref": "#/$defs/dimensionTokenWithDescription" },
+                "input-padding":   { "$ref": "#/$defs/dimensionTokenWithDescription" },
+                "card-padding":    { "$ref": "#/$defs/dimensionTokenWithDescription" },
+                "stack-gap":       { "$ref": "#/$defs/dimensionTokenWithDescription" }
+              },
+              "additionalProperties": { "$ref": "#/$defs/dimensionToken" }
+            }
+          }
+        },
+        "shadow": {
+          "type": ["array", "null"],
+          "description": "Box shadow tokens. null if no shadows were observed in benchmarks.",
+          "items": {
+            "type": "object",
+            "required": ["$value", "$type", "elevation"],
+            "additionalProperties": false,
+            "properties": {
+              "$value": { "$ref": "#/$defs/shadowValue" },
+              "$type": { "type": "string", "const": "shadow" },
+              "elevation": {
+                "type": "string",
+                "enum": ["sm", "md", "lg", "xl"],
+                "description": "Semantic elevation label."
+              },
+              "$description": { "type": "string" }
+            }
+          }
+        },
+        "border_radius": {
+          "type": "object",
+          "required": ["sm", "md", "lg", "full"],
+          "additionalProperties": false,
+          "description": "Border radius steps. 'full' always uses 9999px for pill shapes.",
+          "properties": {
+            "$type": { "type": "string", "const": "dimension" },
+            "sm":   { "$ref": "#/$defs/dimensionToken" },
+            "md":   { "$ref": "#/$defs/dimensionToken" },
+            "lg":   { "$ref": "#/$defs/dimensionToken" },
+            "full": { "$ref": "#/$defs/dimensionToken" }
+          }
+        },
+        "opacity": {
+          "type": ["object", "null"],
+          "description": "Named opacity values. null if no distinct opacity usage was observed.",
+          "properties": {
+            "$type": { "type": "string", "const": "number" },
+            "subtle":   { "$ref": "#/$defs/numberToken" },
+            "disabled": { "$ref": "#/$defs/numberToken" },
+            "overlay":  { "$ref": "#/$defs/numberToken" },
+            "heavy":    { "$ref": "#/$defs/numberToken" }
+          },
+          "additionalProperties": { "$ref": "#/$defs/numberToken" }
+        }
+      }
+    },
+    "aesthetic": {
+      "type": "object",
+      "required": ["summary", "personality_tags", "density", "tone"],
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "2-3 sentence aesthetic description of the synthesized design system."
+        },
+        "personality_tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 4,
+          "maxItems": 8,
+          "description": "4-8 single-word descriptors. Example: ['clean', 'trustworthy', 'precise', 'minimal']."
+        },
+        "density": {
+          "type": "string",
+          "enum": ["compact", "comfortable", "spacious"],
+          "description": "Overall spatial density of the design system."
+        },
+        "tone": {
+          "type": "string",
+          "enum": ["minimal", "expressive", "corporate", "playful", "bold", "elegant"],
+          "description": "Aesthetic tone of the design system."
+        }
+      }
+    },
+    "platform_notes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "react": {
+          "type": "string",
+          "description": "Hints for the React/Tailwind CSS generator agent."
+        },
+        "swiftui": {
+          "type": "string",
+          "description": "Hints for the SwiftUI generator agent."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "colorToken": {
+      "type": "object",
+      "description": "A primitive color token. $value is a 6-digit hex string.",
+      "required": ["$value"],
+      "properties": {
+        "$value": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "description": "Hex color value. 6-digit format: #RRGGBB."
+        },
+        "$type": {
+          "type": "string",
+          "const": "color"
+        },
+        "$description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "semanticColorToken": {
+      "type": "object",
+      "description": "A semantic color token with theme-aware $value. $value is either a flat hex string or a {light, dark} object referencing primitives or using raw hex.",
+      "required": ["$value", "$description"],
+      "properties": {
+        "$value": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "A flat non-themed color value: either a hex string or a DTCG reference ({group.token})."
+            },
+            {
+              "type": "object",
+              "description": "A theme-aware value object with light and dark variants.",
+              "required": ["light", "dark"],
+              "additionalProperties": false,
+              "properties": {
+                "light": {
+                  "type": "string",
+                  "description": "Light-mode value: hex string or DTCG reference syntax ({group.token})."
+                },
+                "dark": {
+                  "type": "string",
+                  "description": "Dark-mode value: hex string or DTCG reference syntax ({group.token})."
+                }
+              }
+            }
+          ]
+        },
+        "$type": {
+          "type": "string",
+          "const": "color"
+        },
+        "$description": {
+          "type": "string",
+          "description": "Required on semantic tokens. Explains the token's intended use."
+        }
+      },
+      "additionalProperties": false
+    },
+    "dimensionToken": {
+      "type": "object",
+      "description": "A dimension token (px value).",
+      "required": ["$value"],
+      "properties": {
+        "$value": {
+          "type": "string",
+          "pattern": "^-?[0-9]+(\\.[0-9]+)?px$",
+          "description": "Pixel dimension value, e.g. '16px' or '0px'."
+        },
+        "$type": {
+          "type": "string",
+          "const": "dimension"
+        },
+        "$description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "dimensionTokenWithDescription": {
+      "type": "object",
+      "description": "A dimension token that requires a $description. Used for semantic spacing tokens.",
+      "required": ["$value", "$description"],
+      "properties": {
+        "$value": {
+          "type": "string",
+          "description": "Pixel dimension value or DTCG reference, e.g. '16px' or '{tokens.spacing.scale.4}'."
+        },
+        "$type": {
+          "type": "string",
+          "const": "dimension"
+        },
+        "$description": {
+          "type": "string",
+          "description": "Required: explains the semantic spacing role."
+        }
+      },
+      "additionalProperties": false
+    },
+    "fontFamilyToken": {
+      "type": "object",
+      "description": "A font family token with an optional fallback stack.",
+      "required": ["$value", "$type"],
+      "properties": {
+        "$value": {
+          "type": "string",
+          "description": "Primary font family name, e.g. 'Inter'."
+        },
+        "$type": {
+          "type": "string",
+          "const": "fontFamily"
+        },
+        "fallback_stack": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered fallback font families for degraded environments."
+        },
+        "$description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "fontWeightToken": {
+      "type": "object",
+      "description": "A font weight token. $value is a numeric weight (100-900).",
+      "required": ["$value"],
+      "properties": {
+        "$value": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 900,
+          "multipleOf": 100,
+          "description": "Numeric font weight, e.g. 400, 500, 600, 700."
+        },
+        "$type": {
+          "type": "string",
+          "const": "fontWeight"
+        },
+        "$description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "numberToken": {
+      "type": "object",
+      "description": "A unitless number token. Used for line heights and opacity values.",
+      "required": ["$value"],
+      "properties": {
+        "$value": {
+          "type": "number",
+          "description": "Unitless number value, e.g. 1.5 for line-height or 0.5 for opacity."
+        },
+        "$type": {
+          "type": "string",
+          "const": "number"
+        },
+        "$description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "shadowValue": {
+      "type": "object",
+      "description": "The $value of a shadow token. Matches the DTCG composite shadow type.",
+      "required": ["offsetX", "offsetY", "blur", "spread", "color"],
+      "additionalProperties": false,
+      "properties": {
+        "offsetX": {
+          "type": "string",
+          "description": "Horizontal shadow offset, e.g. '0px'."
+        },
+        "offsetY": {
+          "type": "string",
+          "description": "Vertical shadow offset, e.g. '4px'."
+        },
+        "blur": {
+          "type": "string",
+          "description": "Shadow blur radius, e.g. '12px'."
+        },
+        "spread": {
+          "type": "string",
+          "description": "Shadow spread radius, e.g. '0px' or '-4px'."
+        },
+        "color": {
+          "type": "string",
+          "description": "Shadow color as hex with alpha, e.g. '#00000026' (8-digit hex)."
+        }
+      }
+    }
+  }
+}
