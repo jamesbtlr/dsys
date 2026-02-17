@@ -319,10 +319,11 @@
       }
     },
     {
-      "description": "When image_type is ui_screenshot, typography and spacing must be objects (not null).",
+      "description": "When image_type is ui_screenshot AND partial_failure is not true, typography and spacing must be objects (not null).",
       "if": {
         "properties": {
-          "image_type": { "const": "ui_screenshot" }
+          "image_type":      { "const": "ui_screenshot" },
+          "partial_failure": { "not": { "const": true } }
         },
         "required": ["image_type"]
       },
