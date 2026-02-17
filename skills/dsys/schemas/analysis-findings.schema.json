@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AnalysisFindings",
+  "description": "Output schema for the dsys analysis agent — one document per input image. Human-readable spec: skills/dsys/references/analysis-findings-schema.md",
+  "type": "object",
+  "required": [
+    "image_type",
+    "source_path",
+    "confidence",
+    "colors",
+    "typography",
+    "spacing",
+    "shadows",
+    "border_radius",
+    "opacity_scale",
+    "aesthetic"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "image_type": {
+      "type": "string",
+      "enum": ["ui_screenshot", "visual_reference"],
+      "description": "ui_screenshot: a real product UI with recognizable interactive elements. visual_reference: mood board, brand photo, illustration, or non-UI inspiration image."
+    },
+
+    "source_path": {
+      "type": "string",
+      "description": "File path or URL of the input image as provided by the orchestrator.",
+      "minLength": 1
+    },
+
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Overall confidence in the extraction quality based on image resolution and clarity."
+    },
+
+    "colors": {
+      "type": "object",
+      "required": ["primitive_palette", "semantic_assignments", "background_style"],
+      "additionalProperties": false,
+      "description": "Color extraction. Always present for both image types.",
+      "properties": {
+        "primitive_palette": {
+          "type": "array",
+          "description": "3–10 distinct colors extracted from the image.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["hex", "role", "frequency"],
+            "additionalProperties": false,
+            "properties": {
+              "hex": {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "description": "Six-digit hex color with # prefix."
+              },
+              "role": {
+                "type": "string",
+                "enum": ["dominant", "accent", "surface", "text", "neutral", "feedback"],
+                "description": "Visual role this color plays in the design."
+              },
+              "frequency": {
+                "type": "string",
+                "enum": ["primary", "secondary", "tertiary"],
+                "description": "Relative use frequency within the image."
+              }
+            }
+          }
+        },
+
+        "semantic_assignments": {
+          "type": "object",
+          "description": "Maps semantic color roles to hex values. All 21 keys are required. For visual_reference images, all values must be null.",
+          "required": [
+            "action_primary",
+            "action_primary_dark",
+            "action_secondary",
+            "action_secondary_dark",
+            "action_destructive",
+            "action_destructive_dark",
+            "surface_default",
+            "surface_default_dark",
+            "surface_raised",
+            "surface_raised_dark",
+            "text_primary",
+            "text_primary_dark",
+            "text_muted",
+            "text_muted_dark",
+            "text_inverse",
+            "border_default",
+            "border_focus",
+            "feedback_success",
+            "feedback_error",
+            "feedback_warning",
+            "feedback_info"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "action_primary":          { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "action_primary_dark":     { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "action_secondary":        { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "action_secondary_dark":   { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "action_destructive":      { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "action_destructive_dark": { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "surface_default":         { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "surface_default_dark":    { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "surface_raised":          { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "surface_raised_dark":     { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "text_primary":            { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "text_primary_dark":       { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "text_muted":              { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "text_muted_dark":         { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "text_inverse":            { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "border_default":          { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "border_focus":            { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "feedback_success":        { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "feedback_error":          { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "feedback_warning":        { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "feedback_info":           { "type": ["string", "null"], "pattern": "^#[0-9A-Fa-f]{6}$" }
+          }
+        },
+
+        "background_style": {
+          "type": "string",
+          "enum": ["light", "dark", "unknown"],
+          "description": "Whether the UI or image presents in a light or dark theme."
+        }
+      }
+    },
+
+    "typography": {
+      "description": "Typography extraction. Must be null for visual_reference images. See top-level allOf for enforcement.",
+      "type": ["object", "null"],
+      "properties": {
+        "font_families": {
+          "type": "object",
+          "required": ["sans", "mono", "display"],
+          "additionalProperties": false,
+          "properties": {
+            "sans":    { "type": ["string", "null"], "description": "Primary sans-serif typeface, or null if not identifiable." },
+            "mono":    { "type": ["string", "null"], "description": "Monospace typeface, or null if not present." },
+            "display": { "type": ["string", "null"], "description": "Distinct display/heading font if different from sans, or null." }
+          }
+        },
+        "type_scale": {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "Distinct font sizes observed, snapped to the standard type scale. Sorted ascending.",
+          "minItems": 1
+        },
+        "weight_usage": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Maps usage contexts (e.g. heading, body, label) to weight descriptions (e.g. '600 (SemiBold)')."
+        },
+        "line_height_pattern": {
+          "type": "string",
+          "enum": ["tight", "normal", "relaxed", "loose"],
+          "description": "Overall line-height character of the UI."
+        }
+      },
+      "required": ["font_families", "type_scale", "weight_usage", "line_height_pattern"]
+    },
+
+    "spacing": {
+      "description": "Spacing extraction. Must be null for visual_reference images. See top-level allOf for enforcement.",
+      "type": ["object", "null"],
+      "properties": {
+        "base_unit": {
+          "type": "number",
+          "enum": [4, 8],
+          "description": "The foundational grid unit in pixels."
+        },
+        "scale": {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "All distinct spacing values observed, snapped to the 4px grid. Sorted ascending.",
+          "minItems": 1
+        },
+        "density": {
+          "type": "string",
+          "enum": ["compact", "comfortable", "spacious"],
+          "description": "Overall information density of the UI."
+        }
+      },
+      "required": ["base_unit", "scale", "density"]
+    },
+
+    "shadows": {
+      "type": ["array", "null"],
+      "description": "Shadow tiers observed in the UI. null if no shadows are visible or image is a visual_reference.",
+      "items": {
+        "type": "object",
+        "required": ["elevation", "offset_x", "offset_y", "blur", "spread", "color", "opacity"],
+        "additionalProperties": false,
+        "properties": {
+          "elevation": {
+            "type": "string",
+            "enum": ["sm", "md", "lg", "xl"],
+            "description": "Elevation tier: sm (subtle cards), md (popovers), lg (modals), xl (high-floating overlays)."
+          },
+          "offset_x": {
+            "type": "number",
+            "description": "Horizontal shadow offset in pixels. Not quantized — preserve as observed."
+          },
+          "offset_y": {
+            "type": "number",
+            "description": "Vertical shadow offset in pixels. Not quantized — preserve as observed."
+          },
+          "blur": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Blur radius in pixels. Not quantized — preserve as observed."
+          },
+          "spread": {
+            "type": "number",
+            "description": "Spread radius in pixels (may be negative). Not quantized — preserve as observed."
+          },
+          "color": {
+            "type": "string",
+            "description": "Shadow color as a hex string (e.g. #000000)."
+          },
+          "opacity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Shadow opacity, 0.0–1.0. Not quantized — preserve as observed."
+          }
+        }
+      }
+    },
+
+    "border_radius": {
+      "type": ["object", "null"],
+      "description": "Corner radius tiers. null if not determinable or image is a visual_reference.",
+      "additionalProperties": false,
+      "properties": {
+        "sm":   { "type": ["number", "null"], "description": "Radius for small elements: badges, chips, tags." },
+        "md":   { "type": ["number", "null"], "description": "Radius for medium elements: buttons, inputs, small cards." },
+        "lg":   { "type": ["number", "null"], "description": "Radius for large elements: modal dialogs, large panels." },
+        "full": { "type": ["boolean", "null"], "description": "true if pill/fully-rounded shapes are used prominently; false if not; null if uncertain." }
+      }
+    },
+
+    "opacity_scale": {
+      "type": ["array", "null"],
+      "description": "Observed opacity values used for overlays, disabled states, or decorative effects. null if no opacity effects are visible.",
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+
+    "aesthetic": {
+      "type": "object",
+      "description": "Aesthetic characterization. Always present for both image types.",
+      "required": ["vibe_description", "personality_tags", "density", "tone"],
+      "additionalProperties": false,
+      "properties": {
+        "vibe_description": {
+          "type": "string",
+          "description": "2–3 sentences describing the overall mood, feel, and aesthetic identity. Present tense.",
+          "minLength": 20
+        },
+        "personality_tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 4,
+          "maxItems": 8,
+          "description": "4–8 single-word descriptors capturing the design character."
+        },
+        "density": {
+          "type": "string",
+          "enum": ["compact", "comfortable", "spacious"],
+          "description": "Visual density of the design."
+        },
+        "tone": {
+          "type": "string",
+          "enum": ["minimal", "expressive", "corporate", "playful", "bold", "elegant"],
+          "description": "Dominant aesthetic tone."
+        }
+      }
+    }
+  },
+
+  "allOf": [
+    {
+      "description": "When image_type is visual_reference, typography and spacing must be null.",
+      "if": {
+        "properties": {
+          "image_type": { "const": "visual_reference" }
+        },
+        "required": ["image_type"]
+      },
+      "then": {
+        "properties": {
+          "typography": { "type": "null" },
+          "spacing":    { "type": "null" }
+        }
+      }
+    },
+    {
+      "description": "When image_type is ui_screenshot, typography and spacing must be objects (not null).",
+      "if": {
+        "properties": {
+          "image_type": { "const": "ui_screenshot" }
+        },
+        "required": ["image_type"]
+      },
+      "then": {
+        "properties": {
+          "typography": { "type": "object" },
+          "spacing":    { "type": "object" }
+        }
+      }
+    }
+  ]
+}
