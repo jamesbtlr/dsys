@@ -13,7 +13,7 @@ Build a Claude Code skill that transforms screenshot benchmarks into a complete,
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Schema Contracts** - Define the JSON schemas and extraction rubric that all agents share (completed 2026-02-17)
-- [ ] **Phase 2: Analysis Agent** - Build and test the per-image vision extraction agent
+- [x] **Phase 2: Analysis Agent** - Build and test the per-image vision extraction agent (completed 2026-02-17)
 - [ ] **Phase 3: Synthesizer Agent** - Merge N analysis findings into a canonical design-system.json
 - [ ] **Phase 4: Platform Generators** - Generate React/Tailwind and SwiftUI artifacts from design-system.json
 - [ ] **Phase 5: Rules and Style Guide** - Generate CLAUDE.md enforcement rules and human-readable style guide
@@ -104,7 +104,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Schema Contracts | 0/3 | Complete    | 2026-02-17 |
-| 2. Analysis Agent | 0/2 | Not started | - |
+| 2. Analysis Agent | 0/2 | Complete    | 2026-02-17 |
 | 3. Synthesizer Agent | 0/TBD | Not started | - |
 | 4. Platform Generators | 0/TBD | Not started | - |
 | 5. Rules and Style Guide | 0/TBD | Not started | - |
