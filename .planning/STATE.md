@@ -46,7 +46,7 @@ Recent decisions affecting current work:
 - Schema contracts must be defined before any agent is written (highest-severity risk)
 - Schemas communicate through disk files (.dsys/), not direct agent-to-agent calls
 - Style Dictionary v5.3.1 (via npx) is the only external dependency; SwiftUI output generated directly by Claude
-- Semantic color taxonomy fixed to 18 roles: action (primary/secondary/destructive), surface (default/raised/overlay/inset), text (primary/secondary/muted/inverse/link), border (default/focus), feedback (success/error/warning/info)
+- Semantic color taxonomy: 21 semantic_assignments keys (action: primary/secondary/destructive each with light+dark variant; surface: default/raised each with light+dark variant; text: primary/muted each with light+dark, plus text_inverse; border: default/focus; feedback: success/error/warning/info) — light+dark pairs flattened into the semantic_assignments map, not nested objects
 - Theme-aware $value pattern: {light, dark} object for semantic color tokens — keeps values co-located, avoids separate file sync bugs
 - conflict_log always required in meta (may be empty []) — makes synthesis auditable without checking for key existence
 - font_family roles (sans/mono/display) are always present keys; value is null if not observed in benchmarks
@@ -67,5 +67,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-17
-Stopped at: Completed 01-02-PLAN.md (design-system.json schema and human-readable spec)
+Stopped at: Completed 01-01-PLAN.md (analysis findings schema, extraction rubric, human-readable spec)
 Resume file: None
