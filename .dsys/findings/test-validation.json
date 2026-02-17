@@ -1,0 +1,109 @@
+{
+  "image_type": "ui_screenshot",
+  "source_path": "/Users/james/Desktop/screenshot.webp",
+  "confidence": "high",
+
+  "colors": {
+    "primitive_palette": [
+      { "hex": "#FFFFFF", "role": "surface", "frequency": "primary" },
+      { "hex": "#F7F9F4", "role": "surface", "frequency": "secondary" },
+      { "hex": "#1F3A1F", "role": "dominant", "frequency": "secondary" },
+      { "hex": "#1A2B1A", "role": "text", "frequency": "primary" },
+      { "hex": "#8A9A8A", "role": "neutral", "frequency": "secondary" },
+      { "hex": "#E8EDE8", "role": "neutral", "frequency": "tertiary" },
+      { "hex": "#E0446E", "role": "accent", "frequency": "tertiary" },
+      { "hex": "#F0F0F0", "role": "neutral", "frequency": "tertiary" }
+    ],
+    "semantic_assignments": {
+      "action_primary":          "#1F3A1F",
+      "action_primary_dark":     "#4ADE80",
+      "action_secondary":        null,
+      "action_secondary_dark":   null,
+      "action_destructive":      null,
+      "action_destructive_dark": null,
+      "surface_default":         "#F7F9F4",
+      "surface_default_dark":    "#0F1A0F",
+      "surface_raised":          "#FFFFFF",
+      "surface_raised_dark":     "#1A2B1A",
+      "text_primary":            "#1A2B1A",
+      "text_primary_dark":       "#F0F4F0",
+      "text_muted":              "#8A9A8A",
+      "text_muted_dark":         "#6B7A6B",
+      "text_inverse":            "#FFFFFF",
+      "border_default":          "#E8EDE8",
+      "border_focus":            "#1F3A1F",
+      "feedback_success":        null,
+      "feedback_error":          "#E0446E",
+      "feedback_warning":        null,
+      "feedback_info":           null
+    },
+    "background_style": "light"
+  },
+
+  "typography": {
+    "font_families": {
+      "sans":    "Satoshi",
+      "mono":    null,
+      "display": null
+    },
+    "type_scale": [12, 13, 14, 16, 20, 24, 40, 48],
+    "weight_usage": {
+      "heading":    "700 (Bold)",
+      "subheading": "600 (SemiBold)",
+      "body":       "400 (Regular)",
+      "label":      "400 (Regular)",
+      "price":      "600 (SemiBold)",
+      "caption":    "400 (Regular)"
+    },
+    "line_height_pattern": "tight"
+  },
+
+  "spacing": {
+    "base_unit": 4,
+    "scale": [4, 8, 12, 16, 20, 24, 32, 48],
+    "density": "comfortable"
+  },
+
+  "shadows": [
+    {
+      "elevation": "sm",
+      "offset_x": 0,
+      "offset_y": 2,
+      "blur": 8,
+      "spread": 0,
+      "color": "#000000",
+      "opacity": 0.06
+    }
+  ],
+
+  "border_radius": {
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "full": true
+  },
+
+  "opacity_scale": [0.3, 0.5],
+
+  "aesthetic": {
+    "vibe_description": "Fresh and modern consumer retail aesthetic built around a deep forest-green brand identity on near-white surfaces. The typography is bold and editorial on hero screens, transitioning to clean and functional on product listing and detail screens. The overall impression is premium but approachable — a fashion-forward brand with clear visual hierarchy and confident use of negative space.",
+    "personality_tags": ["modern", "bold", "fresh", "elegant", "minimal", "youthful"],
+    "density": "comfortable",
+    "tone": "bold"
+  },
+
+  "rationale": {
+    "action_primary": "Deep forest green (#1F3A1F) used on all primary CTA buttons — 'Go Shopping' pill and 'Add to Cart' full-width button. This is the brand's darkest green applied to interactive elements, creating clear affordance against the white surface.",
+    "action_primary_dark": "Inferred — light green (#4ADE80, Tailwind Green 400) as the inverted primary action color for a dark theme, consistent with the green palette identity. Not observed in screenshot.",
+    "surface_default": "The slightly warm off-white (#F7F9F4) used as the screen background color across all three app screens. Distinct from pure white cards — creates a layering effect.",
+    "surface_raised": "Pure white (#FFFFFF) used on all product cards, the search input container, and the bottom product detail panel. Elevated above the F7F9F4 background.",
+    "surface_default_dark": "Inferred — very deep forest green-black (#0F1A0F) as the dark mode background. Not observed.",
+    "surface_raised_dark": "Inferred — dark green (#1A2B1A) for raised surfaces in dark mode. Mirrors the text_primary color applied as a surface.",
+    "text_primary": "Dark forest green-tinted near-black (#1A2B1A) used for all primary text: product names, prices, headings. The greenish undertone aligns with the brand's nature/green identity.",
+    "text_muted": "Medium muted gray-green (#8A9A8A) used for secondary spec labels ('Height:', 'Width:', 'Material') and subdued captions. Clearly differentiated from text_primary in contrast.",
+    "text_inverse": "White (#FFFFFF) used as text on the dark green action buttons.",
+    "border_default": "Very light sage (#E8EDE8) visible on card outlines, search input borders, and the spec dividers in the product detail panel.",
+    "border_focus": "Assigned same as action_primary (#1F3A1F) — the dark green brand color is the natural focus ring color. Not directly observed but consistent with the design system pattern.",
+    "feedback_error": "Vivid pink (#E0446E) used on the filled heart favorite icon. Assigned as feedback_error due to its role as the only non-green accent color and its red-family hue. Could alternatively be classified as an accent with no feedback assignment — but red-family colors in consumer apps typically serve the error/favorite semantic role."
+  }
+}
