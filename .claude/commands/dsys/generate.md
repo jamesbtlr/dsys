@@ -13,6 +13,6 @@ Generate a complete design system from visual benchmark screenshots.
 Takes screenshot paths or a directory, analyzes them in parallel,
 synthesizes design tokens, and generates platform-specific code.
 
-@.claude/skills/dsys/SKILL.md
+@.claude/commands/dsys/SKILL.md
 
 Arguments: $ARGUMENTS
