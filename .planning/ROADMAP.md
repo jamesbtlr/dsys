@@ -75,7 +75,10 @@ Plans:
   3. SwiftUI output includes Color, Font, and Spacing extensions with @ScaledMetric, asset catalog references, and #Preview blocks — compiling against iOS 16+
   4. Starter component templates (Button, Card, Input, Badge, Heading, Text) are generated using the design tokens for each selected platform
   5. Generated platform files can be copied into a project and used immediately without manual edits to make them work
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 04-01-PLAN.md — React/Tailwind generator agent prompt and E2E validation
+- [ ] 04-02-PLAN.md — SwiftUI generator agent prompt and E2E validation
 
 ### Phase 5: Rules and Style Guide
 **Goal**: The design system is self-enforcing in future Claude sessions and documented for human readers
@@ -109,6 +112,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Schema Contracts | 3/3 | Complete    | 2026-02-17 |
 | 2. Analysis Agent | 2/2 | Complete    | 2026-02-17 |
 | 3. Synthesizer Agent | 2/2 | Complete    | 2026-02-18 |
-| 4. Platform Generators | 0/TBD | Not started | - |
+| 4. Platform Generators | 0/2 | Not started | - |
 | 5. Rules and Style Guide | 0/TBD | Not started | - |
 | 6. Orchestrator and Command | 0/TBD | Not started | - |
