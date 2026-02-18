@@ -8,6 +8,7 @@ You are the dsys orchestrator. You coordinate a pipeline of specialized agents t
 - Platform source files in `.dsys/{name}/react/` and/or `.dsys/{name}/swiftui/`
 - `.dsys/{name}/CLAUDE.md` — design system rules for Claude
 - `.dsys/{name}/STYLE-GUIDE.md` — human-readable reference
+- `.dsys/{name}/preview.html` — visual preview (opens in browser)
 
 All output lives inside `.dsys/{name}/` to isolate runs and allow multiple design systems to coexist.
 
@@ -398,7 +399,92 @@ If the result contains `Error:`: STOP and report.
 
 ---
 
-## Step 14: End-of-Run Summary
+## Step 14: Visual Preview
+
+Read `.dsys/{name}/design-system.json` and generate a self-contained HTML preview file at `.dsys/{name}/preview.html`.
+
+**CRITICAL: This file must be completely self-contained — inline CSS only, no external dependencies, no CDN links. It must render correctly when opened with `open .dsys/{name}/preview.html`.**
+
+Read the design-system.json and extract:
+- All semantic color tokens from `tokens.color.semantic` (each has `$value.light` and `$value.dark`)
+- The palette colors from `tokens.color.palette`
+- Typography: `font_family.sans.$value`, `font_family.mono.$value`, `font_family.display.$value`, plus the `font_size` scale
+- Spacing scale from `tokens.spacing`
+- Border radius from `tokens.border_radius`
+- Shadow definitions from `tokens.shadow`
+- The aesthetic summary from `meta.aesthetic`
+
+Write an HTML file using the Write tool with this structure:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{name} — Design System Preview</title>
+  <style>
+    /* Use the actual font family from the design system */
+    @import url('https://fonts.googleapis.com/css2?family={font_family_url_encoded}:wght@400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: '{sans_font}', system-ui, sans-serif;
+      background: {surface.default.light};
+      color: {text.primary.light};
+      padding: 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    /* ... all styles inline ... */
+  </style>
+</head>
+<body>
+  <!-- Section 1: Header with project name and aesthetic summary -->
+  <!-- Section 2: Color Palette — actual colored squares with hex labels -->
+  <!-- Section 3: Semantic Colors — role-based swatches (primary, surface, text, feedback, etc.) with light/dark pairs -->
+  <!-- Section 4: Typography Specimen — headings and body text at each scale size, rendered in the actual font -->
+  <!-- Section 5: Spacing Scale — visual bars at each spacing token size with px labels -->
+  <!-- Section 6: Border Radius — example boxes at each radius value -->
+  <!-- Section 7: Shadow — example cards at each shadow level -->
+  <!-- Section 8: Component Preview — simple styled examples of Button, Card, Badge, Input using the actual tokens -->
+</body>
+</html>
+```
+
+**Design the preview itself to look good.** Use the design system's own tokens for the preview page's styling (surface colors for background, text colors for content, primary for accents). This makes the preview self-referential — the page demonstrates the design system by using it.
+
+**Section details:**
+
+1. **Header:** Project name as an h1, plus the `meta.aesthetic.dominant_approach` and personality tags displayed as badges.
+
+2. **Color Palette:** Grid of squares (64x64px minimum), each filled with a palette color. Label below each with the color name and hex value. Show light and dark variants side by side.
+
+3. **Semantic Colors:** Group by role (action, surface, text, border, feedback). Each role shows a swatch pair (light value / dark value) with the role name and hex values.
+
+4. **Typography:** Render each font size from the scale (`xs` through `5xl`) as a line of sample text using the actual font. Show the size name, pixel value, and a sample sentence. Include weight variants (normal, medium, semibold, bold).
+
+5. **Spacing:** Horizontal bars where each bar's width represents the spacing value. Label with token name and px value.
+
+6. **Border Radius:** Row of boxes each with different radius applied. Label with token name and px value.
+
+7. **Shadows:** Row of cards each with a different shadow level. Label with token name.
+
+8. **Component Preview:** Simple styled representations of Button (primary, secondary, ghost variants), Card (with heading and body text), Badge (success, error, warning, info), and Input (with placeholder text). Style these using the actual token values from design-system.json — not generic CSS.
+
+After writing the file, open it for the user:
+```bash
+open .dsys/{name}/preview.html
+```
+
+Display:
+```
+Visual preview opened in browser: .dsys/{name}/preview.html
+```
+
+---
+
+## Step 15: End-of-Run Summary
 
 Read the actual file listing from disk:
 ```bash
@@ -433,6 +519,7 @@ Display:
 ### Documentation
   .dsys/{name}/CLAUDE.md
   .dsys/{name}/STYLE-GUIDE.md
+  .dsys/{name}/preview.html
 
 ---
 
@@ -442,6 +529,8 @@ Primary:    {action.primary.light value}
 Surface:    {surface.default.light value}
 Font:       {typography.font_family.sans value}
 Components: Button, Card, Input, Badge, Heading, Text
+
+Preview:    open .dsys/{name}/preview.html
 
 ---
 
