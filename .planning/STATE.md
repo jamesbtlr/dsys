@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** AI-generated UI should look intentional, not generic. Front-load design decisions from real-world references so every subsequent build session produces cohesive results.
-**Current focus:** Phase 4 — Platform Generators
+**Current focus:** Phase 5 — Rules and Style Guide
 
 ## Current Position
 
-Phase: 4 of 6 (Platform Generators)
-Plan: 2 of 2 in current phase (04-01 and 04-02 complete)
-Status: Phase 4 complete — ready for Phase 5
-Last activity: 2026-02-18 — Completed 04-02 (SwiftUI generator agent + 31 generated files)
+Phase: 5 of 6 (Rules and Style Guide)
+Plan: 1 of 2 complete (05-01 complete — rules agent prompt written)
+Status: In progress — ready for 05-02 (validation)
+Last activity: 2026-02-18 — Completed 05-01 (rules.md agent prompt, 928 lines)
 
-Progress: [█████████░] ~75%
+Progress: [█████████░] ~83%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: ~6 min
-- Total execution time: ~46 min
+- Total plans completed: 8
+- Average duration: ~5 min
+- Total execution time: ~50 min
 
 **By Phase:**
 
@@ -31,9 +31,10 @@ Progress: [█████████░] ~75%
 | 02-analysis-agent | 2 | ~19 min | ~9 min |
 | 03-synthesizer-agent | 2 | ~11 min | ~5 min |
 | 04-platform-generators | 2 | ~14 min | ~7 min |
+| 05-rules-and-style-guide | 1 | ~4 min | ~4 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (synthesizer agent, ~3 min), 03-02 (synthesizer E2E, ~8 min), 04-01 (React generator + validation, ~6 min), 04-02 (SwiftUI generator + validation, ~8 min)
+- Last 5 plans: 03-02 (synthesizer E2E, ~8 min), 04-01 (React generator + validation, ~6 min), 04-02 (SwiftUI generator + validation, ~8 min), 05-01 (rules agent prompt, ~4 min)
 - Trend: Steady
 
 *Updated after each plan completion*
@@ -83,6 +84,10 @@ Recent decisions affecting current work:
 - Style Dictionary v5 {light,dark} $value concern RESOLVED: tokens.css is authoritative CSS output; tokens.json includes $comment documenting SD limitation; no custom preprocessor needed for Phase 4 scope
 - SwiftUI generator Luxora radius values from design-system.json used over swiftui-spec.md defaults (sm=8, md=16, lg=24 vs. spec's 4/8/12) — JSON values are the actual design system decisions
 - Shadow alpha computed from 8-digit hex #0000000F exactly (0.059) rather than rounding to spec default 0.05 — exact JSON value honored
+- Aesthetic guard uses WARNING prefix (not VIOLATION) — aesthetic violations require human judgment; token rules use VIOLATION for binary testability
+- Vibe narrative must NOT use generic descriptors; MUST name typeface; MUST use 2+ personality_tags verbatim; MUST include 2+ anti-examples — enforced by hard rules in agent prompt
+- Section-marker algorithm written as explicit pseudocode (CASE 1/2/3) — makes CLAUDE.md replacement logic unambiguous for executing agent
+- Component usage rules include import path guidance (import from "@/design-system") — prevents usage without correct import
 
 ### Pending Todos
 
@@ -97,5 +102,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-18
-Stopped at: Completed 04-02-PLAN.md (SwiftUI generator agent + 31 generated files from Luxora design-system.json)
+Stopped at: Completed 05-01-PLAN.md (rules.md agent prompt — 928 lines, 52 NEVER prohibitions, 56 VIOLATION tests)
 Resume file: None
