@@ -89,7 +89,10 @@ Plans:
   2. Every rule in the generated CLAUDE.md is answerable with yes/no: "does this code violate this rule?"
   3. A human-readable style guide is generated with color swatches, type specimens, and spacing scale
   4. A vibe narrative is generated that describes the overall aesthetic of the design system in plain language
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 05-01-PLAN.md — Rules agent prompt (rules.md with section-marker CLAUDE.md management and STYLE-GUIDE.md generation)
+- [ ] 05-02-PLAN.md — Validate rules agent against Luxora design-system.json and verify idempotent re-generation
 
 ### Phase 6: Orchestrator and Command
 **Goal**: All agents are wired into a single slash command that a user can run from Claude Code
@@ -113,5 +116,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Analysis Agent | 2/2 | Complete    | 2026-02-17 |
 | 3. Synthesizer Agent | 2/2 | Complete    | 2026-02-18 |
 | 4. Platform Generators | 2/2 | Complete    | 2026-02-18 |
-| 5. Rules and Style Guide | 0/TBD | Not started | - |
+| 5. Rules and Style Guide | 0/2 | Not started | - |
 | 6. Orchestrator and Command | 0/TBD | Not started | - |
