@@ -4,6 +4,20 @@ A Claude Code slash command that transforms screenshot benchmarks into a complet
 
 Feed it screenshots of UI you admire. It extracts colors, typography, spacing, and component patterns, then generates platform-ready code with enforcement rules so every future Claude session produces cohesive results.
 
+## Install
+
+```bash
+curl -sSL https://raw.githubusercontent.com/jamesbtlr/dsys/main/install.sh | bash
+```
+
+Start a new Claude Code session, then:
+
+```
+/dsys:generate path/to/screenshots/
+```
+
+To update: run the same command again. To uninstall: `rm -rf ~/.dsys-tool ~/.claude/commands/dsys`.
+
 ## What it generates
 
 From one or more screenshots, dsys produces:
@@ -24,40 +38,6 @@ From one or more screenshots, dsys produces:
 **SwiftUI output:** Color asset catalog with automatic dark mode, `@ScaledMetric` spacing, DS-prefixed components (DSButton, DSCard, etc.) targeting iOS 16+.
 
 **CLAUDE.md rules:** Binary-testable enforcement rules that prevent design drift. Every rule is answerable with yes/no: "does this code violate this rule?" Covers token usage, component usage, aesthetic guard.
-
-## Installation
-
-Clone this repo into your project:
-
-```bash
-# From your project root
-git clone https://github.com/jamesbtlr/dsys.git .dsys-tool
-```
-
-Copy the command and skill files into your project:
-
-```bash
-# Command entry (makes /dsys:generate available)
-mkdir -p .claude/commands/dsys
-cp .dsys-tool/.claude/commands/dsys/generate.md .claude/commands/dsys/
-
-# Orchestrator + agents + schemas
-cp -r .dsys-tool/skills .
-
-# Clean up
-rm -rf .dsys-tool
-```
-
-Your project should now have:
-```
-.claude/commands/dsys/generate.md    # Slash command entry
-skills/dsys/orchestrator/SKILL.md    # Pipeline orchestrator
-skills/dsys/agents/                  # 5 specialized agents
-skills/dsys/schemas/                 # JSON Schema validation
-skills/dsys/references/              # Extraction rubrics and specs
-```
-
-Start a new Claude Code session for the command to be discovered.
 
 ## Usage
 
