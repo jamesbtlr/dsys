@@ -32,9 +32,9 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Platform output specifications exist for React/Tailwind and SwiftUI, defining what files each generator must produce
   5. Any two agents using these contracts produce output that can be consumed by the next stage without structure negotiation
 **Plans**: 3 plans
-- [ ] 01-01-PLAN.md — Analysis agent contracts (extraction rubric + findings schema + JSON Schema)
-- [ ] 01-02-PLAN.md — Design system contracts (token schema spec + JSON Schema)
-- [ ] 01-03-PLAN.md — Platform output specifications (React/Tailwind + SwiftUI file manifests)
+- [x] 01-01-PLAN.md — Analysis agent contracts (extraction rubric + findings schema + JSON Schema)
+- [x] 01-02-PLAN.md — Design system contracts (token schema spec + JSON Schema)
+- [x] 01-03-PLAN.md — Platform output specifications (React/Tailwind + SwiftUI file manifests)
 
 ### Phase 2: Analysis Agent
 **Goal**: A single screenshot produces a schema-conformant structured findings JSON through Claude's vision
@@ -48,8 +48,8 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. Extracted spacing tokens are snapped to a 4px grid with semantic tier labels, not raw pixel distances
 **Plans**: 2 plans
 Plans:
-- [ ] 02-01-PLAN.md — Schema extension (rationale + partial failure fields) and analyzer agent prompt
-- [ ] 02-02-PLAN.md — Schema validation, agent testing, and user review checkpoint
+- [x] 02-01-PLAN.md — Schema extension (rationale + partial failure fields) and analyzer agent prompt
+- [x] 02-02-PLAN.md — Schema validation, agent testing, and user review checkpoint
 
 ### Phase 3: Synthesizer Agent
 **Goal**: N analysis findings are merged into one canonical design-system.json with a clear aesthetic identity
@@ -62,8 +62,8 @@ Plans:
   4. The intermediate design-system.json is written to disk and is human-inspectable before generators run
 **Plans**: 2 plans
 Plans:
-- [ ] 03-01-PLAN.md — Synthesizer agent prompt (merge algorithm, conflict resolution, output template)
-- [ ] 03-02-PLAN.md — E2E validation (run synthesizer on test finding, schema validation, output inspection)
+- [x] 03-01-PLAN.md — Synthesizer agent prompt (merge algorithm, conflict resolution, output template)
+- [x] 03-02-PLAN.md — E2E validation (run synthesizer on test finding, schema validation, output inspection)
 
 ### Phase 4: Platform Generators
 **Goal**: design-system.json is transformed into drop-in project files for React/Tailwind and SwiftUI
@@ -106,9 +106,9 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Schema Contracts | 0/3 | Complete    | 2026-02-17 |
-| 2. Analysis Agent | 0/2 | Complete    | 2026-02-17 |
-| 3. Synthesizer Agent | 0/2 | In progress | - |
+| 1. Schema Contracts | 3/3 | Complete    | 2026-02-17 |
+| 2. Analysis Agent | 2/2 | Complete    | 2026-02-17 |
+| 3. Synthesizer Agent | 2/2 | Complete    | 2026-02-18 |
 | 4. Platform Generators | 0/TBD | Not started | - |
 | 5. Rules and Style Guide | 0/TBD | Not started | - |
 | 6. Orchestrator and Command | 0/TBD | Not started | - |
