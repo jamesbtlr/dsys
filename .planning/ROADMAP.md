@@ -103,7 +103,10 @@ Plans:
   2. Parallel analysis agents run for each benchmark image simultaneously, not sequentially
   3. User sees progress updates as each stage completes (analysis, synthesis, generation, rules)
   4. On partial failure, the tool reports which stage failed and what output was successfully written — it does not silently continue
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 06-01-PLAN.md — Orchestrator SKILL.md and generate.md slash command entry (create both files)
+- [ ] 06-02-PLAN.md — Dry-run validation and end-to-end pipeline test with real screenshots
 
 ## Progress
 
@@ -117,4 +120,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Synthesizer Agent | 2/2 | Complete    | 2026-02-18 |
 | 4. Platform Generators | 2/2 | Complete    | 2026-02-18 |
 | 5. Rules and Style Guide | 2/2 | Complete    | 2026-02-18 |
-| 6. Orchestrator and Command | 0/TBD | Not started | - |
+| 6. Orchestrator and Command | 0/2 | Not started | - |
