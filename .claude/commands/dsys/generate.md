@@ -1,7 +1,7 @@
 ---
 name: dsys:generate
-description: Generate a complete design system from screenshot benchmarks
-argument-hint: "[screenshots...] [--name project-name] [--review]"
+description: "Full pipeline: screenshots → design system → code (all stages, one session)"
+argument-hint: "path/to/screenshots/"
 allowed-tools:
   - Read
   - Write

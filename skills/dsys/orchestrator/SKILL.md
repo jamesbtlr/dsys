@@ -142,6 +142,55 @@ If the user responds with anything other than `yes`, `y`, or `proceed`: STOP wit
 
 ---
 
+## Step 5b: Initialize State File
+
+After confirmation, write the initial state file to track pipeline progress:
+
+```bash
+mkdir -p .dsys/{name}/findings/
+```
+
+Write `.dsys/{name}/.state.json` with the following content:
+
+```json
+{
+  "version": 1,
+  "name": "{name}",
+  "created_at": "{ISO 8601 timestamp}",
+  "screenshots": [{valid_paths as quoted strings}],
+  "platforms": [{platforms as quoted strings}],
+  "stages": {
+    "analyze": {
+      "status": "in_progress",
+      "started_at": "{ISO 8601 timestamp}",
+      "completed_at": null,
+      "findings": [],
+      "errors": []
+    },
+    "synthesize": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "design_system_path": null,
+      "errors": []
+    },
+    "build": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "errors": []
+    }
+  }
+}
+```
+
+Generate the ISO 8601 timestamp:
+```bash
+date -u +"%Y-%m-%dT%H:%M:%SZ"
+```
+
+---
+
 ## Step 6: Stage 1 — Parallel Analysis
 
 Display banner:
@@ -254,6 +303,23 @@ If `successful_findings` is now empty after validation: STOP.
 
 ---
 
+## Step 8b: Update State — Analysis Complete
+
+Read `.dsys/{name}/.state.json`, update the `stages.analyze` section:
+
+```json
+{
+  "status": "completed",
+  "completed_at": "{ISO 8601 timestamp}",
+  "findings": ["{list of successful_findings paths}"],
+  "errors": ["{list of any failed basenames, empty if all succeeded}"]
+}
+```
+
+Write the updated state file back to `.dsys/{name}/.state.json`.
+
+---
+
 ## Step 9: Review Pause (conditional)
 
 **Only if `--review` flag was set:**
@@ -338,6 +404,23 @@ Intermediate files are in .dsys/{name}/ for debugging.
 
 ---
 
+## Step 11b: Update State — Synthesis Complete
+
+Read `.dsys/{name}/.state.json`, update the `stages.synthesize` section:
+
+```json
+{
+  "status": "completed",
+  "completed_at": "{ISO 8601 timestamp}",
+  "design_system_path": ".dsys/{name}/design-system.json",
+  "errors": []
+}
+```
+
+Write the updated state file back to `.dsys/{name}/.state.json`.
+
+---
+
 ## Step 12: Stage 3 — Platform Generation
 
 Display banner:
@@ -401,78 +484,96 @@ If the result contains `Error:`: STOP and report.
 
 ## Step 14: Visual Preview
 
-Read `.dsys/{name}/design-system.json` and generate a self-contained HTML preview file at `.dsys/{name}/preview.html`.
+Read `.dsys/{name}/design-system.json` and generate a self-contained HTML preview at `.dsys/{name}/preview.html` based on the reference template at `skills/dsys/references/preview-template.html`.
 
-**CRITICAL: This file must be completely self-contained — inline CSS only, no external dependencies, no CDN links. It must render correctly when opened with `open .dsys/{name}/preview.html`.**
+**Process:**
+1. Read the template file: `skills/dsys/references/preview-template.html`
+2. Read the design-system.json
+3. Replace all `{{placeholder}}` tokens in the template with actual values from design-system.json
+4. Write the result to `.dsys/{name}/preview.html`
 
-Read the design-system.json and extract:
-- All semantic color tokens from `tokens.color.semantic` (each has `$value.light` and `$value.dark`)
-- The palette colors from `tokens.color.palette`
-- Typography: `font_family.sans.$value`, `font_family.mono.$value`, `font_family.display.$value`, plus the `font_size` scale
-- Spacing scale from `tokens.spacing`
-- Border radius from `tokens.border_radius`
-- Shadow definitions from `tokens.shadow`
-- The aesthetic summary from `meta.aesthetic`
+**Placeholder mapping** (every `{{placeholder}}` in the template must be replaced):
 
-Write an HTML file using the Write tool with this structure:
+Colors — substitute hex values:
+- `{{action.primary.light}}` → `tokens.color.semantic.action.primary.$value.light`
+- `{{action.primary.dark}}` → `tokens.color.semantic.action.primary.$value.dark`
+- `{{action.secondary.light}}` → `tokens.color.semantic.action.secondary.$value.light`
+- `{{action.secondary.dark}}` → `tokens.color.semantic.action.secondary.$value.dark`
+- `{{action.destructive.light}}` → `tokens.color.semantic.action.destructive.$value.light`
+- `{{action.destructive.dark}}` → `tokens.color.semantic.action.destructive.$value.dark`
+- `{{surface.default.light}}` → `tokens.color.semantic.surface.default.$value.light`
+- `{{surface.default.dark}}` → `tokens.color.semantic.surface.default.$value.dark`
+- `{{surface.raised.light}}` → `tokens.color.semantic.surface.raised.$value.light`
+- `{{surface.raised.dark}}` → `tokens.color.semantic.surface.raised.$value.dark`
+- `{{surface.overlay.light}}` → `tokens.color.semantic.surface.overlay.$value.light`
+- `{{surface.overlay.dark}}` → `tokens.color.semantic.surface.overlay.$value.dark`
+- `{{surface.inset.light}}` → `tokens.color.semantic.surface.inset.$value.light`
+- `{{surface.inset.dark}}` → `tokens.color.semantic.surface.inset.$value.dark`
+- `{{text.primary.light}}` → `tokens.color.semantic.text.primary.$value.light`
+- `{{text.primary.dark}}` → `tokens.color.semantic.text.primary.$value.dark`
+- `{{text.secondary.light}}` → `tokens.color.semantic.text.secondary.$value.light`
+- `{{text.secondary.dark}}` → `tokens.color.semantic.text.secondary.$value.dark`
+- `{{text.muted.light}}` → `tokens.color.semantic.text.muted.$value.light`
+- `{{text.muted.dark}}` → `tokens.color.semantic.text.muted.$value.dark`
+- `{{text.inverse}}` → `tokens.color.semantic.text.inverse.$value`
+- `{{text.link.light}}` → `tokens.color.semantic.text.link.$value.light`
+- `{{text.link.dark}}` → `tokens.color.semantic.text.link.$value.dark`
+- `{{border.default.light}}` → `tokens.color.semantic.border.default.$value.light`
+- `{{border.default.dark}}` → `tokens.color.semantic.border.default.$value.dark`
+- `{{border.focus.light}}` → `tokens.color.semantic.border.focus.$value.light`
+- `{{border.focus.dark}}` → `tokens.color.semantic.border.focus.$value.dark`
+- `{{feedback.success.light}}` → `tokens.color.semantic.feedback.success.$value.light`
+- `{{feedback.success.dark}}` → `tokens.color.semantic.feedback.success.$value.dark`
+- `{{feedback.error.light}}` → `tokens.color.semantic.feedback.error.$value.light`
+- `{{feedback.error.dark}}` → `tokens.color.semantic.feedback.error.$value.dark`
+- `{{feedback.warning.light}}` → `tokens.color.semantic.feedback.warning.$value.light`
+- `{{feedback.warning.dark}}` → `tokens.color.semantic.feedback.warning.$value.dark`
+- `{{feedback.info.light}}` → `tokens.color.semantic.feedback.info.$value.light`
+- `{{feedback.info.dark}}` → `tokens.color.semantic.feedback.info.$value.dark`
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{name} — Design System Preview</title>
-  <style>
-    /* Use the actual font family from the design system */
-    @import url('https://fonts.googleapis.com/css2?family={font_family_url_encoded}:wght@400;500;600;700&display=swap');
+Typography:
+- `{{font.sans}}` → `tokens.typography.font_family.sans.$value`
+- `{{font.sans.google}}` → URL-encoded version for Google Fonts import (e.g., `DM+Sans`, `Satoshi`)
+- `{{font.fallback}}` → joined `fallback_stack` string (e.g., `-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif`)
+- `{{type.xs}}` through `{{type.5xl}}` → `tokens.typography.scale.{size}.$value`
+- `{{weight.regular}}` through `{{weight.bold}}` → `tokens.typography.weight.{name}.$value`
+- `{{lh.tight}}` through `{{lh.loose}}` → `tokens.typography.line_height.{name}.$value`
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: '{sans_font}', system-ui, sans-serif;
-      background: {surface.default.light};
-      color: {text.primary.light};
-      padding: 48px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    /* ... all styles inline ... */
-  </style>
-</head>
-<body>
-  <!-- Section 1: Header with project name and aesthetic summary -->
-  <!-- Section 2: Color Palette — actual colored squares with hex labels -->
-  <!-- Section 3: Semantic Colors — role-based swatches (primary, surface, text, feedback, etc.) with light/dark pairs -->
-  <!-- Section 4: Typography Specimen — headings and body text at each scale size, rendered in the actual font -->
-  <!-- Section 5: Spacing Scale — visual bars at each spacing token size with px labels -->
-  <!-- Section 6: Border Radius — example boxes at each radius value -->
-  <!-- Section 7: Shadow — example cards at each shadow level -->
-  <!-- Section 8: Component Preview — simple styled examples of Button, Card, Badge, Input using the actual tokens -->
-</body>
-</html>
-```
+Spacing:
+- `{{space.1}}` through `{{space.32}}` → `tokens.spacing.scale.{n}.$value`
 
-**Design the preview itself to look good.** Use the design system's own tokens for the preview page's styling (surface colors for background, text colors for content, primary for accents). This makes the preview self-referential — the page demonstrates the design system by using it.
+Border radius:
+- `{{radius.sm}}` → `tokens.border_radius.sm.$value`
+- `{{radius.md}}` → `tokens.border_radius.md.$value`
+- `{{radius.lg}}` → `tokens.border_radius.lg.$value`
+- `{{radius.full}}` → `tokens.border_radius.full.$value` (use `9999px` if value is `"9999px"`)
 
-**Section details:**
+Shadows:
+- `{{shadow.sm}}` → first shadow `$value` formatted as CSS (e.g., `0 2px 8px 0 rgba(0,0,0,0.06)`)
+- `{{shadow.md}}` → second shadow if exists, otherwise same as sm
 
-1. **Header:** Project name as an h1, plus the `meta.aesthetic.dominant_approach` and personality tags displayed as badges.
+Meta:
+- `{{project.name}}` → the project name
+- `{{aesthetic.summary}}` → `aesthetic.summary`
+- `{{aesthetic.tone}}` → `aesthetic.tone`
+- `{{aesthetic.density}}` → `aesthetic.density`
+- `{{generated.date}}` → current date in YYYY-MM-DD format
 
-2. **Color Palette:** Grid of squares (64x64px minimum), each filled with a palette color. Label below each with the color name and hex value. Show light and dark variants side by side.
+**Dynamic content markers** (replace these markers with generated HTML):
 
-3. **Semantic Colors:** Group by role (action, surface, text, border, feedback). Each role shows a swatch pair (light value / dark value) with the role name and hex values.
+- `<!-- PERSONALITY_TAGS -->` → one `<span class="tag">` per entry in `aesthetic.personality_tags`
+- `<!-- PALETTE_COLORS -->` → for each primitive color group in `tokens.color.primitive`, emit an `<h3>` with the group name and a `.color-grid` div containing one `.color-swatch` per shade
+- `<!-- SEMANTIC_COLORS -->` → for each semantic group (Action, Surface, Text, Border, Feedback), emit an `<h3>` and `.semantic-group` div containing `.semantic-row` entries with Light/Dark swatch pairs. Follow the exact HTML structure in the template's Section 3 pattern.
 
-4. **Typography:** Render each font size from the scale (`xs` through `5xl`) as a line of sample text using the actual font. Show the size name, pixel value, and a sample sentence. Include weight variants (normal, medium, semibold, bold).
+**Border-radius to component mapping** (already encoded in the template CSS):
+- **Buttons:** `{{radius.full}}` — pill-shaped when the design system includes a `full` token
+- **Cards:** `{{radius.lg}}` — large rounded containers
+- **Badges:** `{{radius.full}}` — always pill-shaped
+- **Inputs:** `{{radius.md}}` — moderate rounding
+- **Color swatches:** `{{radius.sm}}` — subtle rounding
+- **Section containers (component-group):** `{{radius.lg}}`
 
-5. **Spacing:** Horizontal bars where each bar's width represents the spacing value. Label with token name and px value.
-
-6. **Border Radius:** Row of boxes each with different radius applied. Label with token name and px value.
-
-7. **Shadows:** Row of cards each with a different shadow level. Label with token name.
-
-8. **Component Preview:** Simple styled representations of Button (primary, secondary, ghost variants), Card (with heading and body text), Badge (success, error, warning, info), and Input (with placeholder text). Style these using the actual token values from design-system.json — not generic CSS.
-
-After writing the file, open it for the user:
+After writing the file, open it:
 ```bash
 open .dsys/{name}/preview.html
 ```
@@ -538,6 +639,22 @@ To integrate: copy `.dsys/{name}/CLAUDE.md` into your project's CLAUDE.md
 ```
 
 Use the actual `ls` output for the file list — do not hardcode paths. Extract preview values by reading the JSON file.
+
+---
+
+## Step 15b: Update State — Build Complete
+
+Read `.dsys/{name}/.state.json`, update the `stages.build` section:
+
+```json
+{
+  "status": "completed",
+  "completed_at": "{ISO 8601 timestamp}",
+  "errors": []
+}
+```
+
+Write the updated state file back to `.dsys/{name}/.state.json`.
 
 ---
 

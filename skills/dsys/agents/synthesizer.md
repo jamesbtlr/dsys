@@ -161,7 +161,7 @@ When a `_dark` key is null in ALL findings, apply these heuristics:
 
 | Dark Token | Heuristic |
 |------------|-----------|
-| `action_primary_dark` | If light value has L* < 50 (dark color): use a lighter version of the same hue. If light value is bright (L* ≥ 50): darken slightly. Goal: maintain visibility on dark surfaces. |
+| `action_primary_dark` | If light value has L* < 50 (dark color): increase lightness by 25–35 L* units while preserving the exact hue and saturation. Do NOT substitute a standard palette color (e.g., do not replace a custom dark green with Tailwind Green 400). For example, `#1F3A1F` (dark forest green, L*≈22) should yield approximately `#4A7A4A` (L*≈47, same hue/saturation), NOT `#4ADE80` (different hue and saturation). If light value is bright (L* ≥ 50): darken by 10–15 L* units. Goal: maintain visibility on dark surfaces while preserving the brand's exact hue identity. |
 | `surface_default_dark` | Invert lightness while preserving hue undertone. Near-white light (#F9FAFB with gray tint) → near-black dark (#0F172A or #111827 with the same cool/warm tint). |
 | `surface_raised_dark` | Slightly lighter than `surface_default_dark`. If default_dark is #111827, raised_dark might be #1F2937. |
 | `text_primary_dark` | Near-white on dark surface. Preserve any hue undertone from the light value. A warm near-black light value → warm near-white dark value (e.g., #F5F5F0). |
@@ -169,7 +169,7 @@ When a `_dark` key is null in ALL findings, apply these heuristics:
 | `text_inverse` | Typically `#FFFFFF` regardless of theme — text on colored backgrounds (buttons) is almost always white. |
 | `border_default_dark` | Lighter than `surface_default_dark` but still subtle. Equivalent to gray.700 level (e.g., #374151). |
 | `border_focus_dark` | Same as `action_primary_dark` — focus ring matches primary action color. |
-| `feedback_*_dark` | Slightly lighter or more saturated version of the light feedback color. Goal: sufficient contrast against dark surface. Green-500 light → green-400 dark. Red-500 light → red-400 dark. |
+| `feedback_*_dark` | Slightly lighter or more saturated version of the light feedback color. Increase L* by 10–15 units while preserving hue and saturation. Do NOT substitute standard palette colors. Goal: sufficient contrast against dark surface. |
 
 ---
 
@@ -282,9 +282,10 @@ Use DTCG reference syntax for semantic values: `"{tokens.spacing.scale.N}"`.
 
 **Border radius:**
 1. Collect all non-null `border_radius` objects from all findings.
-2. For each tier (`sm`, `md`, `lg`): frequency vote across sources. If tie, use dominant benchmark's value.
-3. For `full`: if the majority of sources have `full: true`, set to `"9999px"`. Otherwise omit the full tier from the output (or use a reasonable large value like `"9999px"` if any source used pill shapes).
-4. Convert numeric values to `"Npx"` strings. Example: `4` → `"4px"`.
+2. For each tier (`sm`, `md`, `lg`): if only one source, use that value directly. If multiple sources provide different values for the same tier, use the dominant benchmark's value (do not average — averaging dilutes intentional design choices).
+3. For `full`: set to `"9999px"` if ANY source has `full: true` (pill shapes are an intentional design choice — one source showing them is sufficient evidence).
+4. Snap final values to the nearest value in: 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 28, 32, 9999. This is a finer grid than the analyzer's observation — it normalizes without losing significant precision.
+5. Convert to `"Npx"` strings. Example: `20` → `"20px"`.
 
 **Opacity:**
 1. Collect all non-null `opacity_scale` arrays from all findings.

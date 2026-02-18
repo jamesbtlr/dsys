@@ -41,40 +41,60 @@ From one or more screenshots, dsys produces:
 
 ## Usage
 
-```
-/dsys:generate <screenshots> [--name <project-name>] [--review]
-```
+There are two ways to run dsys: all at once, or in stages.
 
-**Screenshots:** Pass individual file paths or a directory containing `.png`, `.jpg`, `.jpeg`, or `.webp` files.
+### Option A: Full pipeline (one session)
+
+Runs analysis, synthesis, and code generation all in one session. Best for quick runs with 1-2 screenshots.
 
 ```bash
-# Single screenshot
-/dsys:generate ~/Desktop/hero.png
-
-# Multiple screenshots
-/dsys:generate ~/benchmarks/hero.png ~/benchmarks/card.png ~/benchmarks/nav.png
-
-# Directory of screenshots
-/dsys:generate ~/benchmarks/
-
-# With explicit project name
+/dsys:generate path/to/screenshots/
 /dsys:generate ~/benchmarks/ --name my-app
-
-# Pause after analysis to review findings before synthesis
-/dsys:generate ~/benchmarks/ --review
+/dsys:generate hero.png card.png nav.png
 ```
 
-The command will:
-1. Validate screenshots and resolve paths
-2. Ask which platforms to generate (React/Tailwind, SwiftUI, or both)
-3. Show confirmation with project name and screenshot count
-4. Run analysis agents in parallel (one per screenshot)
-5. Validate findings against JSON Schema
-6. Synthesize findings into a unified design system
-7. Generate platform-specific code
-8. Generate enforcement rules and style guide
-9. Open a visual preview in your browser
-10. Display a file manifest and design system summary
+### Option B: Split workflow (recommended for 3+ screenshots)
+
+Runs each stage separately so you can `/clear` between them and reclaim context. Each stage reads its inputs from disk — nothing is lost between sessions.
+
+```bash
+# Step 1: Analyze screenshots → extracts design findings
+/dsys:analyze path/to/screenshots/ --name my-app
+
+/clear
+
+# Step 2: Merge findings → writes design-system.json
+/dsys:synthesize my-app
+
+/clear
+
+# Step 3: Generate code, rules, and preview
+/dsys:build my-app
+```
+
+Check progress at any time with `/dsys:status` or `/dsys:status my-app`.
+
+### Commands reference
+
+| Command | What it does | Arguments |
+|---------|-------------|-----------|
+| `/dsys:generate` | Full pipeline in one session | `path/to/screenshots/ [--name my-app]` |
+| `/dsys:analyze` | Step 1: Extract design findings | `path/to/screenshots/ [--name my-app]` |
+| `/dsys:synthesize` | Step 2: Merge into design-system.json | `my-app` |
+| `/dsys:build` | Step 3: Generate code + preview | `my-app` |
+| `/dsys:status` | Check pipeline progress | `[my-app]` |
+
+### Screenshot inputs
+
+Pass individual file paths or a directory containing `.png`, `.jpg`, `.jpeg`, or `.webp` files:
+
+```bash
+/dsys:generate ~/Desktop/hero.png                    # Single file
+/dsys:generate hero.png card.png nav.png             # Multiple files
+/dsys:generate ~/benchmarks/                         # Directory
+/dsys:generate ~/benchmarks/ --name my-app           # Explicit project name
+/dsys:generate ~/benchmarks/ --review                # Pause after analysis to review findings
+```
 
 ## Integrating the output
 

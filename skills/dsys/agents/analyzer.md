@@ -83,7 +83,13 @@ Follow the embedded Extraction Rubric for your classified image type. Apply thes
 
 ### Color Rules
 
-**Preserve exact observed values.** Do NOT snap hex values to the nearest standard palette color or web-safe color. Preserve the exact color you observe. Use your knowledge of common design palettes (Tailwind, Material, Apple HIG) to infer the designer's intended hex — but report that inferred intent value, not a rounded approximation. If you cannot infer intent with confidence, report the observed pixel value directly. Let the synthesizer (Phase 3) decide on quantization and normalization.
+**Report the color you actually observe.** Do NOT snap hex values to any standard palette (Tailwind, Material, Apple HIG) or web-safe color. Most real-world designs use custom brand colors that do not match any standard palette. Report your best estimate of the actual hex value in the screenshot. If the observed color happens to closely match a known palette color (within approximately ±5 per RGB channel), you may note that in the rationale string — but the reported hex must always be your direct observation, not a palette lookup. Let the synthesizer (Phase 3) decide on quantization and normalization.
+
+**Anti-pattern — palette snapping:** A dark forest green button (#142E1A) is NOT Tailwind Green 500 (#22C55E) and is NOT Tailwind Green 800 (#166534). Report what you see, not what palette swatch it vaguely resembles.
+
+**Dark buttons with light text.** When a button has white or near-white text, the button background is necessarily dark (L* < 35) to maintain readable contrast. If you observe a CTA button with white text, your extracted color for that button MUST be dark — not a medium-lightness color. Common mistake: seeing a dark green button (#142E1A) and reporting a medium green (#4E7A3E) because the surrounding context (green-tinted imagery, green background) biases perception lighter. Always ask: "Would white text be readable on the color I'm reporting?" If not, your color is too light — darken it.
+
+**Consistent button colors.** If the same visual style (same apparent color, same text color, same shape) appears on multiple buttons (e.g., "Go Shopping" and "Add to Cart"), they MUST map to the same semantic token with the same hex value. Do not assign different colors to buttons that appear to use the same style.
 
 **Functional colors only.** Only extract colors that appear on functional UI elements: buttons, text, backgrounds, borders, icons, form inputs, navigation elements, status indicators. Ignore colors that appear exclusively in:
 - Illustrations or character art
@@ -98,7 +104,7 @@ Follow the embedded Extraction Rubric for your classified image type. Apply thes
 Apply quantization rules from Section 4 of the Extraction Rubric exactly:
 - Spacing: snap to the 4px grid using the ranges table
 - Font sizes: snap to the standard type scale
-- Border radius: snap to the standard border radius scale
+- Border radius: report the value you observe (no quantization — see Section 4)
 - Shadows and colors: no quantization — preserve as observed
 
 ### Ambiguity Rule
@@ -221,10 +227,10 @@ Where `failed_categories` lists the exact field names you could not extract (e.g
   ],
 
   "border_radius": {
-    "sm": 4,
-    "md": 8,
-    "lg": 16,
-    "full": false
+    "sm": "observed_value",
+    "md": "observed_value",
+    "lg": "observed_value",
+    "full": "true | false | null"
   },
 
   "opacity_scale": [0.1, 0.25, 0.5, 0.75],
@@ -338,6 +344,13 @@ All hex values in `colors.primitive_palette[].hex` and `colors.semantic_assignme
 **Check 8: No additional properties.**
 The schema enforces `additionalProperties: false` at the root level and on nested objects. Do not add any field not present in the template. If you added any extra fields during extraction, remove them now.
 
+**Check 9: Button color brightness sanity check.**
+If `text_inverse` is non-null (white text is used on colored surfaces) AND `action_primary` is non-null:
+- Estimate the relative luminance of `action_primary`. For a quick check: if the R, G, and B components are all above 0x60 (96 decimal), the color is likely too light for white text.
+- A primary action button with white text (`text_inverse: #FFFFFF`) should have a contrast ratio of at least 4.5:1 (WCAG AA). This means the button color must be dark enough.
+- If your extracted `action_primary` appears to be a medium-lightness color (any RGB channel > 0x90), re-examine the screenshot. CTA buttons with white text are almost always very dark (all RGB channels below 0x80, often below 0x50).
+- If the check suggests the color is too light, re-examine the screenshot and correct the value before writing.
+
 ---
 
 ## Step 7: Write Output
@@ -443,12 +456,12 @@ Extract the dominant color palette. Aim for 4–10 colors covering the visible U
 - Are there destructive actions (delete, remove, danger)? → `action.destructive`
 - Are there success/error/warning states visible? → `feedback.success`, `feedback.error`, `feedback.warning`
 
-**Color intent inference:** Do not round hex values to the nearest web-safe color. Instead, infer the designer's intended palette color. If a button appears to be approximately `#3B82F6` (Tailwind Blue 500), report `#3B82F6`. If a background is approximately `#F9FAFB` (Tailwind Gray 50), report `#F9FAFB`. Use your knowledge of common design system palettes to identify the likely intended value. Acknowledge ambiguity in your confidence rating.
+**Color observation rule:** Report the color you actually see in the screenshot. Do NOT attempt to match observed colors to Tailwind, Material, Apple HIG, or any other standard palette. Most designs use custom brand colors. A dark forest green button is NOT "Tailwind Green 500" — report the actual dark green you observe. If you notice a close match to a known palette color (within ±5 per RGB channel), note it in the rationale string, but always report the observed value as the hex. Acknowledge estimation uncertainty in your confidence rating.
 
 **Theme inference:** Determine whether the screenshot shows a light-themed or dark-themed UI. For the detected theme, extract observed semantic color values. For the opposite theme, infer plausible equivalents based on common light/dark design patterns. Mark inferred opposite-theme values with awareness that they are inferred, not observed — this affects your overall confidence rating.
 
 **Primitive palette:** Identify 4–10 distinct colors used in the UI. For each, record:
-- `hex`: The exact hex value (inferred to nearest intended palette color)
+- `hex`: The exact hex value as observed in the screenshot (do not snap to any standard palette)
 - `role`: The visual role in the UI. One of: `dominant` (most visually prominent — usually the brand or primary action color), `accent` (secondary distinctive color), `surface` (background-level color), `text` (used for text rendering), `neutral` (grays used for borders, dividers, subtle backgrounds), `feedback` (success/error/warning/info colors)
 - `frequency`: `primary` (used most), `secondary`, or `tertiary`
 
@@ -522,11 +535,21 @@ Do **not** quantize shadow values. Preserve offset, blur, spread, and opacity as
 
 ### Border Radius
 
-Observe the corner rounding applied to interactive and container elements. Snap to standard values (see Section 4: Quantization Rules). Identify the radius applied at each size tier:
+Observe the corner rounding applied to interactive and container elements. Report values as observed — do NOT quantize border radius values. Estimate the actual pixel radius you see in the screenshot.
+
+**Observation approach:** Before assigning tiers, characterize the overall roundness of the design:
+- **Sharp** designs: corners ≤ 4px, UI feels crisp and angular
+- **Moderate** designs: corners 6–12px, UI feels balanced
+- **Heavily rounded** designs: corners 16–32px, UI feels soft and friendly
+- **Pill-heavy** designs: fully rounded buttons/tags are the dominant pattern
+
+Use this overall impression to calibrate your per-tier estimates. If the design is clearly "heavily rounded," your sm tier should be at least 8–12px and your md/lg tiers should be proportionally higher (16–24px+). Do not default to small values when the design is visually rounded.
+
+Identify the radius applied at each size tier:
 
 - `sm`: Small elements — badges, chips, tags, small pills, icon buttons
 - `md`: Medium elements — input fields, buttons, dropdowns, small cards
-- `lg`: Large elements — modal dialogs, full-page panels, large containers
+- `lg`: Large elements — modal dialogs, full-page panels, large containers, large cards
 
 Also record:
 - `full`: Set to `true` if fully-rounded pill shapes appear prominently (e.g., 9999px radius tags or toggle buttons). Set to `false` if no fully-rounded elements appear. Set to `null` if uncertain.
@@ -629,30 +652,30 @@ Map observed size to the nearest value in this list. For example:
 - Observed 23px → 24 (closest)
 - Observed 26px → 28 (closest)
 
-### Border Radius — Snap to Standard Scale
+### Border Radius — Report Observed Values
 
-Allowed values: **0, 2, 4, 6, 8, 12, 16, 24, 32, 9999**
+Report border radius values as observed. Do NOT snap to a quantization grid. Estimate the actual pixel radius visible in the screenshot. Allowed to report any integer value.
 
-| Observed range | Snaps to |
-|---------------|---------|
-| 0–1px | 0 |
-| 2–3px | 2 |
-| 4–5px | 4 |
-| 6–7px | 6 |
-| 8–10px | 8 |
-| 11–14px | 12 |
-| 15–20px | 16 |
-| 21–28px | 24 |
-| 29–40px | 32 |
-| Fully round (pill) | 9999 |
+Use these reference points to calibrate your estimates:
+- 0px = perfectly square corners
+- 4px = barely perceptible rounding
+- 8px = gentle rounding, common on minimal designs
+- 12px = moderate rounding
+- 16px = clearly rounded, soft feel
+- 20px = prominently rounded
+- 24px = very rounded, friendly feel
+- 32px = extremely rounded
+- 9999 = fully round / pill shape
+
+If the design is heavily rounded (most corners appear 16px+), do NOT underestimate. A clearly soft, rounded card corner is more likely 20-24px than 8-12px.
 
 ### Shadows — No Quantization
 
 Report shadow values as observed. Do not snap offset, blur, spread, or opacity values to a grid.
 
-### Colors — No Hex Rounding
+### Colors — Observe Directly, No Palette Snapping
 
-Do not round hex values. Instead, **infer intent**: if the pixel values suggest a commonly used palette color (Tailwind, Material, Apple HIG), report the likely intended hex. If you cannot infer the intent with confidence, report the observed hex value directly.
+Report the hex value you observe in the screenshot. Do NOT match observed colors to any standard palette (Tailwind, Material, Apple HIG, or others). Most designs use custom brand colors. If the observed color happens to closely match a known palette color (within approximately ±5 per RGB channel), you may note the match in the rationale — but the hex value itself must always be your direct observation.
 
 ---
 
@@ -713,7 +736,7 @@ When analyzing a `ui_screenshot`, assign hex values to all semantic color roles 
 | `feedback_info` | Informational states (neutral notification, hint) | Observed or null | Observed or null |
 
 **Rules:**
-- "Observed value" = you saw this color used for this purpose in the screenshot. Report the inferred-intent hex.
+- "Observed value" = you saw this color used for this purpose in the screenshot. Report the observed hex value directly.
 - "Inferred" = you did not observe this in the screenshot but can reasonably infer the value based on common light/dark design patterns and the observed palette.
 - "Observed or null" = report if visible, otherwise `null`.
 - "Inferred or null" = infer if possible, otherwise `null`.
