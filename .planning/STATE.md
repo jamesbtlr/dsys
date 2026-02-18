@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-17)
 
 **Core value:** AI-generated UI should look intentional, not generic. Front-load design decisions from real-world references so every subsequent build session produces cohesive results.
-**Current focus:** Phase 3 — Synthesizer Agent
+**Current focus:** Phase 4 — Platform Generators
 
 ## Current Position
 
-Phase: 3 of 6 (Synthesizer Agent)
-Plan: 2 of 2 in current phase
-Status: Phase 3 complete — ready for Phase 4
-Last activity: 2026-02-18 — Completed 03-02 (synthesizer E2E validation, design-system.json produced)
+Phase: 4 of 6 (Platform Generators)
+Plan: 1 of 2 in current phase (04-01 complete)
+Status: Phase 4 in progress — React generator complete, SwiftUI generator next
+Last activity: 2026-02-18 — Completed 04-01 (React/Tailwind generator agent + 11 generated files)
 
-Progress: [███████░░░] ~50%
+Progress: [████████░░] ~62%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: ~5 min
-- Total execution time: ~32 min
+- Total execution time: ~38 min
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [███████░░░] ~50%
 | 01-schema-contracts | 3 | ~16 min | ~5 min |
 | 02-analysis-agent | 2 | ~19 min | ~9 min |
 | 03-synthesizer-agent | 2 | ~11 min | ~5 min |
+| 04-platform-generators | 1 (ongoing) | ~6 min | ~6 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (schema ext + analyzer agent, ~6 min), 02-02 (E2E validation, ~13 min), 03-01 (synthesizer agent, ~3 min), 03-02 (synthesizer E2E, ~8 min)
+- Last 5 plans: 02-02 (E2E validation, ~13 min), 03-01 (synthesizer agent, ~3 min), 03-02 (synthesizer E2E, ~8 min), 04-01 (React generator + validation, ~6 min)
 - Trend: Steady
 
 *Updated after each plan completion*
@@ -75,6 +76,11 @@ Recent decisions affecting current work:
 - design-system.schema.json must not use format:date-time — ajv-cli cannot validate it without ajv-formats package; string type with description is sufficient
 - Synthesizer E2E confirmed: produces schema-conformant, human-inspectable design-system.json from a single real finding; forest-green Luxora brand system with Satoshi typography
 - feedback.info uses brand green (#1F3A1F) not blue in Luxora system — palette has no blue; generator agents must account for this
+- React generator forwardRef applied to all 6 components (not just DOM wrappers) — consistency beats selective application, avoids maintenance burden
+- Raw className concatenation (${className ?? ''}) over cn() utility — keeps generated design system files dependency-free
+- Button ghost variant: transparent bg, text-text color, hover:bg-surface-inset; Outline variant adds border border-border — distinct by presence of border
+- Input size variants (sm/md/lg) included despite Phase 1 spec showing size-less Input — CONTEXT.md locked sizes for Input
+- Style Dictionary v5 {light,dark} $value concern RESOLVED: tokens.css is authoritative CSS output; tokens.json includes $comment documenting SD limitation; no custom preprocessor needed for Phase 4 scope
 
 ### Pending Todos
 
@@ -83,11 +89,11 @@ None.
 ### Blockers/Concerns
 
 - Phase 2 (Analyzer): Prompt engineering empirical test COMPLETE — extraction quality confirmed acceptable on Luxora mobile e-commerce screenshot
-- Style Dictionary v5 {light, dark} $value handling: LOW confidence on exact behavior; requires empirical testing before Phase 4 React generator is finalized; custom preprocess step is likely required
+- Style Dictionary v5 {light, dark} $value handling: RESOLVED — tokens.css is authoritative; tokens.json includes $comment documenting SD limitation; no custom preprocessor needed
 - Phase 4 (SwiftUI generator) iOS target concern RESOLVED: iOS 16 chosen and documented in swiftui-spec.md
 
 ## Session Continuity
 
 Last session: 2026-02-18
-Stopped at: Completed 03-02-PLAN.md (synthesizer E2E validation — design-system.json produced)
+Stopped at: Completed 04-01-PLAN.md (React/Tailwind generator agent + 11 generated files from Luxora design-system.json)
 Resume file: None
