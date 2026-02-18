@@ -21,8 +21,7 @@
       "properties": {
         "generated_at": {
           "type": "string",
-          "format": "date-time",
-          "description": "UTC datetime when synthesis completed. ISO 8601 format."
+          "description": "UTC datetime when synthesis completed. ISO 8601 format (e.g. '2026-02-18T01:12:18Z'). Format not validated by ajv-cli — ajv-formats package not available."
         },
         "source_count": {
           "type": "integer",

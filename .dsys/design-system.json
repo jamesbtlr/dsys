@@ -1,0 +1,234 @@
+{
+  "meta": {
+    "generated_at": "2026-02-18T01:12:18Z",
+    "source_count": 1,
+    "source_types": {
+      "ui_screenshots": 1,
+      "visual_references": 0
+    },
+    "aesthetic_summary": "Bold, modern consumer retail aesthetic anchored by a deep forest-green brand identity on warm off-white surfaces. Typography is editorial and confident, with the Satoshi typeface and tight leading reinforcing the premium, fashion-forward character. The palette is restrained — forest green, near-white, and a vivid pink accent — giving the system a clear, confident identity with excellent contrast.",
+    "dominant_approach": "Bold forest-green retail with editorial Satoshi typography and warm off-white surfaces",
+    "conflict_log": []
+  },
+  "tokens": {
+    "color": {
+      "primitive": {
+        "$type": "color",
+        "green": {
+          "400": { "$value": "#4ADE80", "$description": "Green 400 — light-mode inverted action, dark-mode primary action and feedback success" },
+          "500": { "$value": "#22C55E", "$description": "Green 500 — feedback success (light mode)" }
+        },
+        "forest": {
+          "800": { "$value": "#1F3A1F", "$description": "Forest 800 — primary brand green; CTA buttons, border focus, action primary (light)" },
+          "900": { "$value": "#1A2B1A", "$description": "Forest 900 — primary text (light), surface raised (dark)" },
+          "950": { "$value": "#0F1A0F", "$description": "Forest 950 — darkest surface background (dark mode default)" }
+        },
+        "sage": {
+          "50":  { "$value": "#F7F9F4", "$description": "Sage 50 — default surface background (light mode)" },
+          "100": { "$value": "#F0F4F0", "$description": "Sage 100 — inset surface (light), primary text (dark)" },
+          "200": { "$value": "#E8EDE8", "$description": "Sage 200 — border default (light), action secondary (light)" },
+          "400": { "$value": "#8A9A8A", "$description": "Sage 400 — muted text (light)" },
+          "600": { "$value": "#6B7A6B", "$description": "Sage 600 — muted text (dark)" },
+          "700": { "$value": "#526052", "$description": "Sage 700 — secondary text (light), derived midpoint text.primary/text.muted" },
+          "800": { "$value": "#3D4A3D", "$description": "Sage 800 — border default (dark)" },
+          "900": { "$value": "#2A3D2A", "$description": "Sage 900 — action secondary (dark)" }
+        },
+        "pink": {
+          "400": { "$value": "#F06292", "$description": "Pink 400 — feedback error (dark mode), lighter variant of brand accent" },
+          "500": { "$value": "#E0446E", "$description": "Pink 500 — feedback error (light mode); vivid brand accent" }
+        },
+        "red": {
+          "400": { "$value": "#F87171", "$description": "Red 400 — destructive action (dark mode)" },
+          "500": { "$value": "#EF4444", "$description": "Red 500 — destructive action (light mode)" }
+        },
+        "amber": {
+          "400": { "$value": "#FACC15", "$description": "Amber 400 — feedback warning (dark mode)" },
+          "500": { "$value": "#F59E0B", "$description": "Amber 500 — feedback warning (light mode)" }
+        },
+        "white": { "$value": "#FFFFFF", "$description": "Pure white — raised surface (light), text inverse, surface overlay (light)" },
+        "gray": {
+          "100": { "$value": "#F0F0F0", "$description": "Gray 100 — neutral surface (no green tint)" }
+        }
+      },
+      "semantic": {
+        "$type": "color",
+        "action": {
+          "primary": {
+            "$value": { "light": "#1F3A1F", "dark": "#4ADE80" },
+            "$description": "Primary interactive elements: CTA buttons, selected states. Forest green light / bright green dark."
+          },
+          "secondary": {
+            "$value": { "light": "#E8EDE8", "dark": "#2A3D2A" },
+            "$description": "Derived: secondary/ghost interactive elements. Light sage background light / deep green-gray dark. No benchmark contained this role."
+          },
+          "destructive": {
+            "$value": { "light": "#EF4444", "dark": "#F87171" },
+            "$description": "Derived: standard red — danger actions (delete, remove, irreversible operations). No benchmark contained this role."
+          }
+        },
+        "surface": {
+          "default": {
+            "$value": { "light": "#F7F9F4", "dark": "#0F1A0F" },
+            "$description": "Default page/screen background. Warm off-white light / deep forest-black dark."
+          },
+          "raised": {
+            "$value": { "light": "#FFFFFF", "dark": "#1A2B1A" },
+            "$description": "Card and elevated surface, above default. Pure white light / dark forest-green dark."
+          },
+          "overlay": {
+            "$value": { "light": "#FFFFFF", "dark": "#1F2937" },
+            "$description": "Derived: surface.default lightened for modal/drawer backgrounds. White light / dark gray dark."
+          },
+          "inset": {
+            "$value": { "light": "#F0F4F0", "dark": "#0A140A" },
+            "$description": "Derived: surface.default darkened for recessed surfaces (inputs, code blocks). Slightly deeper sage light / deeper forest dark."
+          }
+        },
+        "text": {
+          "primary": {
+            "$value": { "light": "#1A2B1A", "dark": "#F0F4F0" },
+            "$description": "Primary body text and headings. Dark forest-green-tinted near-black light / warm near-white dark."
+          },
+          "secondary": {
+            "$value": { "light": "#526052", "dark": "#ADBAAD" },
+            "$description": "Derived: midpoint between text.primary and text.muted. Mid-tone sage green-gray for supporting text."
+          },
+          "muted": {
+            "$value": { "light": "#8A9A8A", "dark": "#6B7A6B" },
+            "$description": "Disabled, placeholder, caption, and subdued label text. Muted gray-green."
+          },
+          "inverse": {
+            "$value": "#FFFFFF",
+            "$description": "Text on colored surfaces (e.g. white text on forest-green button)."
+          },
+          "link": {
+            "$value": { "light": "#1F3A1F", "dark": "#4ADE80" },
+            "$description": "Derived: same as action.primary — hyperlinks use the primary action color."
+          }
+        },
+        "border": {
+          "default": {
+            "$value": { "light": "#E8EDE8", "dark": "#3D4A3D" },
+            "$description": "Standard borders and dividers. Very light sage light / mid-dark sage dark. Dark mode derived: Step 4b heuristic."
+          },
+          "focus": {
+            "$value": { "light": "#1F3A1F", "dark": "#4ADE80" },
+            "$description": "Focus ring color for accessibility. Matches primary action color. Dark mode derived: same as action.primary dark."
+          }
+        },
+        "feedback": {
+          "success": {
+            "$value": { "light": "#22C55E", "dark": "#4ADE80" },
+            "$description": "Derived: standard green — success states and confirmations. No benchmark contained this role."
+          },
+          "error": {
+            "$value": { "light": "#E0446E", "dark": "#F06292" },
+            "$description": "Error and destructive feedback states. Vivid pink observed in benchmark. Dark mode: lighter pink variant."
+          },
+          "warning": {
+            "$value": { "light": "#F59E0B", "dark": "#FACC15" },
+            "$description": "Derived: standard amber — warning states. No benchmark contained this role."
+          },
+          "info": {
+            "$value": { "light": "#1F3A1F", "dark": "#4ADE80" },
+            "$description": "Derived: uses brand action color for informational states — no blue in the Luxora palette. No benchmark contained this role."
+          }
+        }
+      }
+    },
+    "typography": {
+      "font_family": {
+        "sans": {
+          "$value": "Satoshi",
+          "$type": "fontFamily",
+          "fallback_stack": ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "Helvetica Neue", "sans-serif"]
+        },
+        "mono": null,
+        "display": null
+      },
+      "scale": {
+        "$type": "dimension",
+        "xs":   { "$value": "12px" },
+        "sm":   { "$value": "13px" },
+        "base": { "$value": "14px" },
+        "lg":   { "$value": "16px" },
+        "xl":   { "$value": "20px" },
+        "2xl":  { "$value": "24px" },
+        "3xl":  { "$value": "32px" },
+        "4xl":  { "$value": "40px" },
+        "5xl":  { "$value": "48px" }
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "regular":  { "$value": 400 },
+        "medium":   { "$value": 500 },
+        "semibold": { "$value": 600 },
+        "bold":     { "$value": 700 }
+      },
+      "line_height": {
+        "$type": "number",
+        "tight":   { "$value": 1.25 },
+        "normal":  { "$value": 1.5 },
+        "relaxed": { "$value": 1.625 },
+        "loose":   { "$value": 2.0 }
+      }
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": {
+        "$type": "dimension",
+        "1":  { "$value": "4px"   },
+        "2":  { "$value": "8px"   },
+        "3":  { "$value": "12px"  },
+        "4":  { "$value": "16px"  },
+        "5":  { "$value": "20px"  },
+        "6":  { "$value": "24px"  },
+        "8":  { "$value": "32px"  },
+        "10": { "$value": "40px"  },
+        "12": { "$value": "48px"  },
+        "16": { "$value": "64px"  },
+        "20": { "$value": "80px"  },
+        "24": { "$value": "96px"  },
+        "32": { "$value": "128px" }
+      },
+      "semantic": {
+        "$type": "dimension",
+        "component-gap":   { "$value": "{tokens.spacing.scale.3}", "$description": "Gap between components in a layout (comfortable: 12px)" },
+        "card-padding":    { "$value": "{tokens.spacing.scale.4}", "$description": "Internal padding inside card/panel surfaces (comfortable: 16px)" },
+        "page-margin":     { "$value": "{tokens.spacing.scale.6}", "$description": "Outer page margin / container padding (comfortable: 24px)" },
+        "section-padding": { "$value": "{tokens.spacing.scale.8}", "$description": "Padding around major content sections (comfortable: 32px)" },
+        "input-padding":   { "$value": "{tokens.spacing.scale.3}", "$description": "Internal padding inside form inputs (comfortable: 12px)" },
+        "stack-gap":       { "$value": "{tokens.spacing.scale.2}", "$description": "Gap in vertical/horizontal stack layouts (comfortable: 8px)" }
+      }
+    },
+    "shadow": [
+      {
+        "$value": { "offsetX": "0px", "offsetY": "2px", "blur": "8px", "spread": "0px", "color": "#0000000F" },
+        "$type": "shadow",
+        "elevation": "sm"
+      }
+    ],
+    "border_radius": {
+      "$type": "dimension",
+      "sm":   { "$value": "8px"    },
+      "md":   { "$value": "16px"   },
+      "lg":   { "$value": "24px"   },
+      "full": { "$value": "9999px" }
+    },
+    "opacity": {
+      "$type": "number",
+      "disabled": { "$value": 0.3, "$description": "Disabled element opacity" },
+      "overlay":  { "$value": 0.5, "$description": "Modal backdrop and overlay opacity" }
+    }
+  },
+  "aesthetic": {
+    "summary": "Bold, modern consumer retail with a deep forest-green brand identity against warm off-white surfaces. Typography is editorial and confident — Satoshi at tight leading, bold weights on hero text. The palette is intentionally restrained: forest green, near-white, and a vivid pink accent create a clear, premium-but-approachable identity.",
+    "personality_tags": ["modern", "bold", "fresh", "elegant", "minimal", "youthful"],
+    "density": "comfortable",
+    "tone": "bold"
+  },
+  "platform_notes": {
+    "react": "Use CSS custom properties for color tokens to enable runtime theme switching. Apply --color-*: initial; in @theme to suppress Tailwind defaults. Font fallback stacks should be included in the CSS font-family declarations.",
+    "swiftui": "Reference colors via asset catalog (Color(\"name\", bundle: .module)) for automatic dark mode. Use @ScaledMetric for spacing constants. Minimum deployment target is iOS 16."
+  }
+}
