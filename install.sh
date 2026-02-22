@@ -24,7 +24,7 @@ git -C "$INSTALL_DIR" checkout -- skills/dsys/orchestrator/ 2>/dev/null || true
 # so the tool works from any project directory
 for md_file in "$INSTALL_DIR"/skills/dsys/orchestrator/*.md; do
   tmp_file="${md_file}.tmp"
-  sed "s|skills/dsys/agents/|$INSTALL_DIR/skills/dsys/agents/|g; s|skills/dsys/schemas/|$INSTALL_DIR/skills/dsys/schemas/|g" "$md_file" > "$tmp_file"
+  sed "s|skills/dsys/agents/|$INSTALL_DIR/skills/dsys/agents/|g; s|skills/dsys/schemas/|$INSTALL_DIR/skills/dsys/schemas/|g; s|skills/dsys/references/|$INSTALL_DIR/skills/dsys/references/|g" "$md_file" > "$tmp_file"
   mv "$tmp_file" "$md_file"
 done
 
@@ -115,6 +115,27 @@ React/Tailwind and/or SwiftUI code, CLAUDE.md rules, STYLE-GUIDE.md, and preview
 Arguments: \$ARGUMENTS
 CMDEOF
 
+cat > "$COMMANDS_DIR/figma.md" << CMDEOF
+---
+name: dsys:figma
+description: "Push design system to Figma as native variables, styles, and components"
+argument-hint: "project-name"
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Task
+---
+
+Push a generated design system into Figma as native Variables, Paint Styles,
+Text Styles, and Components via figma-console-mcp. Requires a completed
+/dsys:build run and figma-console-mcp configured as an MCP server.
+
+@$INSTALL_DIR/skills/dsys/orchestrator/figma.md
+
+Arguments: \$ARGUMENTS
+CMDEOF
+
 cat > "$COMMANDS_DIR/status.md" << CMDEOF
 ---
 name: dsys:status
@@ -144,6 +165,7 @@ echo "  Or run in stages (use /clear between each to save context):"
 echo "    /dsys:analyze path/to/screenshots/   → extracts design findings"
 echo "    /dsys:synthesize my-app              → merges into design-system.json"
 echo "    /dsys:build my-app                   → generates platform code + preview"
+echo "    /dsys:figma my-app                   → pushes to Figma (optional)"
 echo ""
 echo "  Check progress anytime:"
 echo "    /dsys:status"
