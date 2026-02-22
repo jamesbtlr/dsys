@@ -38,6 +38,7 @@ Pipeline:
   analyze:    {status} {completed_at or ""}
   synthesize: {status} {completed_at or ""}
   build:      {status} {completed_at or ""}
+  figma:      {status or "—"} {completed_at or ""}
 
 {Next action suggestion}
 ```
@@ -46,7 +47,8 @@ Next action suggestions based on the first non-completed stage:
 - If analyze is not completed: `Next: /dsys:analyze {screenshots_dir_or_paths} --name {name}`
 - If analyze is completed but synthesize is not: `Next: /dsys:synthesize {name}`
 - If synthesize is completed but build is not: `Next: /dsys:build {name}`
-- If all completed: `All stages complete. Output in .dsys/{name}/`
+- If build is completed but figma is not completed: `All stages complete. Output in .dsys/{name}/\n  Optional: /dsys:figma {name} (push to Figma)`
+- If all completed (including figma): `All stages complete. Output in .dsys/{name}/ + Figma`
 
 ---
 
@@ -64,6 +66,6 @@ For each state file found, read it and display a one-line summary:
 
 ```
 dsys projects:
-  {name}  analyze:{status}  synthesize:{status}  build:{status}
+  {name}  analyze:{status}  synthesize:{status}  build:{status}  figma:{status or "—"}
   ...
 ```

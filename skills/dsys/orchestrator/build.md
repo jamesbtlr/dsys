@@ -243,6 +243,10 @@ Preview:    open .dsys/{name}/preview.html
 ---
 
 To integrate: copy `.dsys/{name}/CLAUDE.md` into your project's CLAUDE.md
+
+### Figma Integration (optional)
+  Push to Figma:  /dsys:figma {name}
+  Setup guide:    /dsys:figma --check
 ```
 
 Use the actual `ls` output for the file list — do not hardcode paths.

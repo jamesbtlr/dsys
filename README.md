@@ -82,6 +82,7 @@ Check progress at any time with `/dsys:status` or `/dsys:status my-app`.
 | `/dsys:analyze` | Step 1: Extract design findings | `path/to/screenshots/ [--name my-app]` |
 | `/dsys:synthesize` | Step 2: Merge into design-system.json | `my-app` |
 | `/dsys:build` | Step 3: Generate code + preview | `my-app` |
+| `/dsys:figma` | Push design system to Figma | `my-app` |
 | `/dsys:status` | Check pipeline progress | `[my-app]` |
 
 ### Screenshot inputs
@@ -95,6 +96,32 @@ Pass individual file paths or a directory containing `.png`, `.jpg`, `.jpeg`, or
 /dsys:generate ~/benchmarks/ --name my-app           # Explicit project name
 /dsys:generate ~/benchmarks/ --review                # Pause after analysis to review findings
 ```
+
+## Figma integration (optional)
+
+Push your generated design system into Figma as native Variables, Paint Styles, Text Styles, and Components.
+
+**Setup** (one-time):
+
+```bash
+curl -sSL https://raw.githubusercontent.com/jamesbtlr/dsys/main/setup-figma.sh | bash
+```
+
+The script configures the [figma-console-mcp](https://github.com/southleft/figma-console-mcp) server and tells you where to find the Bridge Plugin to import into Figma. You'll need a [Figma Personal Access Token](https://www.figma.com/developers/api#access-tokens).
+
+**Usage:**
+
+```bash
+# After /dsys:build completes:
+/dsys:figma my-app
+```
+
+This creates in your open Figma file:
+- **5 Variable Collections** with Light/Dark mode support for colors
+- **18 Paint Styles** and **10 Text Styles**
+- **6 Components** with variants (Button, Card, Input, Badge, Heading, Text)
+
+Requires Figma desktop with a Dev or Full seat. Run `/dsys:figma --check` for setup help.
 
 ## Integrating the output
 
@@ -116,7 +143,7 @@ cp -r .dsys/<project-name>/swiftui/Sources/DesignSystem/ Sources/DesignSystem/
 
 ## How it works
 
-dsys is a pipeline of 5 specialized Claude agents coordinated by an orchestrator prompt:
+dsys is a pipeline of specialized Claude agents coordinated by an orchestrator prompt:
 
 1. **Analyzer** (1 per screenshot, parallel) - Vision-based extraction of colors, typography, spacing, and component patterns. Snaps values to standard scales (4px grid, standard font sizes, quantized hex values).
 
@@ -127,6 +154,8 @@ dsys is a pipeline of 5 specialized Claude agents coordinated by an orchestrator
 4. **SwiftUI Generator** - Transforms design tokens into Color asset catalog, Typography/Spacing/Radius extensions, and DS-prefixed SwiftUI components.
 
 5. **Rules Agent** - Generates binary-testable CLAUDE.md rules and a human-readable STYLE-GUIDE.md with color swatches, typography specimens, and spacing scale.
+
+6. **Figma Generator** (optional) - Pushes design tokens into Figma as native Variables, creates Paint Styles and Text Styles, and builds component frames with variants via the Figma Plugin API.
 
 Schema validation runs between every stage boundary. If any stage fails, intermediate files persist on disk for debugging.
 
