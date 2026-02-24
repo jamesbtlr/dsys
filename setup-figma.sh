@@ -76,15 +76,8 @@ echo ""
 
 echo "  Locating Desktop Bridge plugin..."
 
-# Pre-download the package so --print-path works
-BRIDGE_PATH=$(npx -y figma-console-mcp@latest --print-path 2>/dev/null || true)
-
-if [ -n "$BRIDGE_PATH" ] && [ -f "$BRIDGE_PATH/figma-desktop-bridge/manifest.json" ]; then
-  MANIFEST="$BRIDGE_PATH/figma-desktop-bridge/manifest.json"
-else
-  # Fallback: find it in the npm cache
-  MANIFEST=$(find "$HOME/.npm/_npx" -path "*/figma-console-mcp/figma-desktop-bridge/manifest.json" -print -quit 2>/dev/null || true)
-fi
+# npx caches the package under ~/.npm/_npx when claude mcp add runs it
+MANIFEST=$(find "$HOME/.npm/_npx" -path "*/figma-console-mcp/figma-desktop-bridge/manifest.json" -print -quit 2>/dev/null || true)
 
 echo ""
 echo "  ────────────────────────────────────────────────────"
