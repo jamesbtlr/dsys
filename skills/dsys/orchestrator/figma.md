@@ -79,16 +79,22 @@ Design system: .dsys/{name}/design-system.json
 
 ## Step 2: Verify figma-console-mcp Connection
 
-Attempt a connection check. The simplest way is to try calling any figma-console-mcp tool. Use a lightweight read-only tool if available, or attempt to read the current Figma file info.
+Call `figma_get_status` from the figma-console MCP server.
 
-If the tool call fails with an error indicating the MCP server is not available (connection refused, tool not found, etc.):
+**Success criteria:** The tool call itself completes without a connection error. If you receive ANY JSON response back from the tool (even if fields like `currentFileName` say "unable to retrieve"), the MCP server IS connected and working. Proceed.
 
-Display:
+**Failure criteria:** The tool call itself fails — e.g., "tool not found", "MCP server not available", "connection refused", or similar transport-level errors. These mean the MCP server is not configured or not running.
+
+On **success**, display:
+```
+Connected to Figma via figma-console-mcp
+```
+
+On **failure** (tool call error, NOT a field value in the response), display:
 ```
 Error: figma-console-mcp is not available.
 
 The Figma integration requires the figma-console-mcp MCP server.
-Run /dsys:figma --check for setup instructions.
 
 Run the setup script:
   curl -sSL https://raw.githubusercontent.com/jamesbtlr/dsys/main/setup-figma.sh | bash
@@ -97,11 +103,6 @@ Or run /dsys:figma --check for full setup instructions.
 ```
 
 STOP — do not proceed.
-
-If the connection succeeds, display:
-```
-Connected to Figma via figma-console-mcp
-```
 
 ---
 
