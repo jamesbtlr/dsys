@@ -37,7 +37,7 @@ else
   echo "  Generate one at: https://www.figma.com/developers/api#access-tokens"
   echo ""
   printf "  Paste your Figma PAT: "
-  read -r FIGMA_TOKEN
+  read -r FIGMA_TOKEN < /dev/tty
   echo ""
 fi
 
