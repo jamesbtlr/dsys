@@ -93,8 +93,7 @@ if [ -n "$MANIFEST" ]; then
   echo "     $MANIFEST"
 else
   echo "     Run this to find the manifest path:"
-  echo "       npx figma-console-mcp@latest --print-path"
-  echo "     Then select: <that-path>/figma-desktop-bridge/manifest.json"
+  echo "       find ~/.npm/_npx -path '*/figma-console-mcp/figma-desktop-bridge/manifest.json' 2>/dev/null"
 fi
 
 echo ""
