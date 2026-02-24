@@ -63,10 +63,10 @@ if claude mcp get figma-console &> /dev/null; then
   claude mcp remove figma-console -s user 2>/dev/null || true
 fi
 
-claude mcp add -s user \
+claude mcp add figma-console \
+  -s user \
   -e FIGMA_ACCESS_TOKEN="$FIGMA_TOKEN" \
   -e ENABLE_MCP_APPS=true \
-  figma-console \
   -- npx -y figma-console-mcp@latest
 
 echo "  MCP server configured."
