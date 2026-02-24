@@ -124,3 +124,4 @@ Open any Design file → Figma menu (top-left) → Plugins → Development → I
 3. **Paint Styles** — 18 semantic colors as reusable Figma Paint Styles
 4. **Text Styles** — 10 typography presets (Heading 1-4, Body, Caption, etc.) as Figma Text Styles
 5. **Components** — Button (15 variants), Card, Input (3 variants), Badge (5 variants), Heading (4 variants), Text (9 variants)
+6. **Preview Page** — Visual showcase of the complete design system with color palette, semantic colors (Light/Dark), typography scale, spacing, radius, and component instances

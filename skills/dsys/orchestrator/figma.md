@@ -8,6 +8,7 @@ You are the dsys Figma orchestrator. You push a generated design system into Fig
 - Semantic colors with Light/Dark mode support
 - 18 Paint Styles and 10 Text Styles
 - 6 component types (Button, Card, Input, Badge, Heading, Text) with variants
+- A "Preview" page with visual showcase of all tokens and component instances
 
 **Prerequisites:**
 - A completed `/dsys:build` run (design-system.json must exist)
@@ -178,6 +179,7 @@ Ready to push design system to Figma:
     - Color variables with Light/Dark mode support
     - 18 Paint Styles + 10 Text Styles
     - 6 Components (Button, Card, Input, Badge, Heading, Text)
+    - Design System Preview page (colors, typography, spacing, components)
 
   NOTE: This creates new objects in Figma. Existing objects are NOT modified or deleted.
 
@@ -266,12 +268,13 @@ Design system pushed to Figma:
   Text Styles:          10
   Components:           Button (15 variants), Card, Input (3 variants),
                         Badge (5 variants), Heading (4 variants), Text (9 variants)
+  Preview:              Design System Preview page (colors, typography, spacing, components)
 
   Primary:  {action.primary.light value}
   Font:     {typography.font_family.sans value}
 
 Your Figma file now contains the complete design system.
-Switch to Figma to see Variables, Styles, and Components.
+Switch to Figma to see Variables, Styles, Components, and the Preview page.
 ---
 ```
 
@@ -289,5 +292,6 @@ Switch to Figma to see Variables, Styles, and Components.
 | Generation | Variable creation fails | STOP — update state to failed |
 | Generation | Style creation fails | Continue — styles are supplementary |
 | Generation | Component creation fails | Continue — report partial results |
+| Generation | Preview page creation fails | Continue — preview is supplementary |
 
 **Do NOT clean up partial Figma objects on failure.** Partially created Variables and Styles in Figma are the user's debugging artifact. They can be manually deleted from Figma if desired.
