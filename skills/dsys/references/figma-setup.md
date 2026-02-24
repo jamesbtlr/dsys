@@ -22,7 +22,8 @@ curl -sSL https://raw.githubusercontent.com/jamesbtlr/dsys/main/setup-figma.sh |
 ```
 
 The script:
-- Configures `figma-console-mcp` as a Claude Code MCP server (user-scoped)
+- Kills stale figma-console-mcp processes from previous sessions
+- Configures `figma-console-mcp` as a Claude Code MCP server (user-scoped, pinned to port 9223)
 - Prints the exact path to the Bridge Plugin manifest you need to import
 
 **3. Import the Bridge Plugin into Figma Desktop** (one-time, ~30 seconds):
@@ -31,15 +32,14 @@ The script:
 - Select the `manifest.json` path the script printed
 - Click **Open**
 
-**4. Run the Bridge Plugin** (each time you use `/dsys:figma`):
-- Open the Figma file you want to push to
-- Click the **Figma menu** (top-left) → **Plugins** → **Development** → **Figma Desktop Bridge**
-- Wait for the "Connected" indicator
+**4. Each time you use `/dsys:figma`** (order matters):
+1. Start Claude Code: `claude`
+2. Open your target Design file in Figma Desktop
+3. Run the Bridge Plugin: **Figma menu** (top-left) → **Plugins** → **Development** → **Figma Desktop Bridge**
+4. Wait for the green "MCP ready" indicator
+5. In Claude Code, run: `/dsys:figma my-project`
 
-**5. Start a new Claude Code session and run:**
-```
-/dsys:figma my-project
-```
+The orchestrator auto-detects connection issues and will guide you if something isn't right.
 
 ---
 
@@ -71,11 +71,25 @@ If the connection fails, check:
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | "figma-console-mcp not found" | MCP server not configured | Re-run setup-figma.sh, restart Claude Code |
-| "Bridge not connected" | Plugin not running | Open Figma, run Figma Desktop Bridge (Plugins > Development) |
+| "Bridge not connected" | Plugin not running | Run Bridge Plugin in Figma (see step 4 above) |
+| "Cleaning up stale processes" | Zombie processes from previous sessions | Automatic — wait 5 seconds, orchestrator handles it |
+| "Could not connect after 30s" | Bridge Plugin not responding | Try the Fresh Start procedure below |
 | "Unauthorized" | Invalid or expired PAT | Generate a new PAT and re-run setup-figma.sh |
 | "Cannot create variables" | Free/viewer seat | Upgrade to Dev or Full seat |
 | Font loading error | Font not available in Figma | Agent auto-retries with "Inter" fallback |
 | Tools timeout | Large batch operation | Ensure stable connection, retry |
+
+### Fresh Start
+
+If nothing else works, this resets everything:
+
+1. Close Figma Desktop
+2. Kill all processes: `pkill -f figma-console-mcp`
+3. Exit Claude Code
+4. Open Figma Desktop and your target Design file
+5. Start Claude Code: `claude`
+6. Run the Bridge Plugin in Figma
+7. Run `/dsys:figma my-project`
 
 ---
 
@@ -87,6 +101,7 @@ claude mcp add figma-console \
   -s user \
   -e FIGMA_ACCESS_TOKEN=figd_YOUR_TOKEN_HERE \
   -e ENABLE_MCP_APPS=true \
+  -e FIGMA_WS_PORT=9223 \
   -- npx -y figma-console-mcp@latest
 ```
 
