@@ -25,15 +25,15 @@ The script:
 - Configures `figma-console-mcp` as a Claude Code MCP server (user-scoped)
 - Prints the exact path to the Bridge Plugin manifest you need to import
 
-**3. Import the Bridge Plugin into Figma** (one-time, ~30 seconds):
-- Open Figma desktop
-- **Plugins > Development > Import plugin from manifest...**
+**3. Import the Bridge Plugin into Figma Desktop** (one-time, ~30 seconds):
+- Open (or create) any Design file in Figma Desktop — you must be inside a file, not the home screen
+- Click the **Figma menu** (top-left) → **Plugins** → **Development** → **Import plugin from manifest...**
 - Select the `manifest.json` path the script printed
 - Click **Open**
 
 **4. Run the Bridge Plugin** (each time you use `/dsys:figma`):
 - Open the Figma file you want to push to
-- **Plugins > Development > Figma Desktop Bridge**
+- Click the **Figma menu** (top-left) → **Plugins** → **Development** → **Figma Desktop Bridge**
 - Wait for the "Connected" indicator
 
 **5. Start a new Claude Code session and run:**
@@ -60,7 +60,7 @@ The script:
 
 If the connection fails, check:
 - Is Figma desktop running?
-- Is the Bridge Plugin running? (Plugins > Development > Figma Desktop Bridge)
+- Is the Bridge Plugin running? (Figma menu → Plugins → Development → Figma Desktop Bridge)
 - Is your PAT valid and not expired?
 - Did you start a **new** Claude Code session after running setup?
 
@@ -83,21 +83,20 @@ If the connection fails, check:
 
 **1. Configure MCP server:**
 ```bash
-claude mcp add -s user \
+claude mcp add figma-console \
+  -s user \
   -e FIGMA_ACCESS_TOKEN=figd_YOUR_TOKEN_HERE \
   -e ENABLE_MCP_APPS=true \
-  figma-console \
   -- npx -y figma-console-mcp@latest
 ```
 
 **2. Find the Bridge Plugin:**
 ```bash
-npx figma-console-mcp@latest --print-path
+find ~/.npm/_npx -path '*/figma-console-mcp/figma-desktop-bridge/manifest.json' 2>/dev/null
 ```
-The `figma-desktop-bridge/manifest.json` is inside that directory.
 
-**3. Import in Figma:**
-Plugins > Development > Import plugin from manifest... > select the manifest.json
+**3. Import in Figma Desktop:**
+Open any Design file → Figma menu (top-left) → Plugins → Development → Import plugin from manifest... → select the manifest.json
 
 ---
 
