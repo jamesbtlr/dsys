@@ -81,16 +81,12 @@ Design system: .dsys/{name}/design-system.json
 
 Call `figma_get_status` from the figma-console MCP server.
 
-**Success criteria:** The tool call itself completes without a connection error. If you receive ANY JSON response back from the tool (even if fields like `currentFileName` say "unable to retrieve"), the MCP server IS connected and working. Proceed.
+Parse the JSON response and check TWO things:
 
-**Failure criteria:** The tool call itself fails — e.g., "tool not found", "MCP server not available", "connection refused", or similar transport-level errors. These mean the MCP server is not configured or not running.
+### Check A: MCP server available
 
-On **success**, display:
-```
-Connected to Figma via figma-console-mcp
-```
+If the tool call itself fails (e.g., "tool not found", "MCP server not available", "connection refused"), the MCP server is not configured. Display:
 
-On **failure** (tool call error, NOT a field value in the response), display:
 ```
 Error: figma-console-mcp is not available.
 
@@ -103,6 +99,51 @@ Or run /dsys:figma --check for full setup instructions.
 ```
 
 STOP — do not proceed.
+
+### Check B: Bridge Plugin connected
+
+If the tool call succeeds (returns JSON), check the `transport.active` field in the response:
+
+- If `transport.active` is `"websocket"` → Bridge is connected. Display:
+  ```
+  Connected to Figma via figma-console-mcp
+  ```
+  Proceed to Step 3.
+
+- If `transport.active` is `"none"` → the MCP server is running but the Figma Desktop Bridge plugin is NOT connected via WebSocket. This is the most common issue.
+
+  **First**, check if there are stale processes causing port conflicts. Look for `transport.websocket.portFallbackUsed` or `transport.websocket.otherInstances` in the response. If the server is on a fallback port, display:
+  ```
+  Port conflict detected: stale figma-console-mcp processes from previous sessions.
+  Cleaning up...
+  ```
+  Then run:
+  ```bash
+  pkill -f figma-console-mcp 2>/dev/null; sleep 1
+  ```
+  Then display:
+  ```
+  Stale processes killed. Please:
+    1. Start a NEW Claude Code session (type 'exit' then 'claude')
+    2. In Figma, re-run the Bridge Plugin:
+       Figma menu → Plugins → Development → Figma Desktop Bridge
+    3. Run /dsys:figma {name} again
+  ```
+  STOP — do not proceed.
+
+  If there is NO port conflict (server is on preferred port 9223), display:
+  ```
+  Error: Figma Desktop Bridge plugin is not connected.
+
+  The MCP server is running but can't reach Figma. Please:
+    1. Open Figma Desktop (the desktop app, not browser)
+    2. Open a Design file where the design system should go
+    3. Run the Bridge plugin: Figma menu (top-left) → Plugins → Development → Figma Desktop Bridge
+    4. Wait for the green "MCP ready" indicator
+
+  Then re-run /dsys:figma {name}
+  ```
+  STOP — do not proceed.
 
 ---
 
