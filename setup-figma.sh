@@ -53,7 +53,16 @@ if [[ ! "$FIGMA_TOKEN" == figd_* ]]; then
   echo ""
 fi
 
-# ── Step 3: Configure MCP server ──
+# ── Step 3: Clean up and configure MCP server ──
+
+# Kill stale figma-console-mcp processes from previous sessions.
+# These zombies occupy ports and prevent new sessions from connecting.
+if pgrep -f figma-console-mcp > /dev/null 2>&1; then
+  echo "  Cleaning up stale figma-console-mcp processes..."
+  pkill -f figma-console-mcp 2>/dev/null || true
+  rm -f /tmp/figma-console-mcp-*.json 2>/dev/null || true
+  sleep 1
+fi
 
 echo "  Configuring figma-console-mcp..."
 
@@ -67,6 +76,7 @@ claude mcp add figma-console \
   -s user \
   -e FIGMA_ACCESS_TOKEN="$FIGMA_TOKEN" \
   -e ENABLE_MCP_APPS=true \
+  -e FIGMA_WS_PORT=9223 \
   -- npx -y figma-console-mcp@latest
 
 echo "  MCP server configured."
@@ -81,12 +91,12 @@ MANIFEST=$(find "$HOME/.npm/_npx" -path "*/figma-console-mcp/figma-desktop-bridg
 
 echo ""
 echo "  ────────────────────────────────────────────────────"
-echo "  Done! Two steps remain (must be done in Figma):"
+echo "  Done! One-time setup: import the Bridge Plugin"
 echo "  ────────────────────────────────────────────────────"
 echo ""
-echo "  1. Import the Bridge Plugin into Figma Desktop:"
+echo "  In Figma Desktop (one-time):"
 echo ""
-echo "     a) Open (or create) any Design file in Figma Desktop"
+echo "     a) Open (or create) any Design file"
 echo "        (you must be inside a file — the home screen won't work)"
 echo ""
 echo "     b) Click the Figma menu (top-left) → Plugins → Development"
@@ -102,12 +112,14 @@ else
 fi
 
 echo ""
-echo "  2. Run the Bridge Plugin (do this each time you use /dsys:figma):"
+echo "  ────────────────────────────────────────────────────"
+echo "  Each time you use /dsys:figma:"
+echo "  ────────────────────────────────────────────────────"
 echo ""
-echo "     In your target Figma file, click the Figma menu (top-left)"
-echo "     → Plugins → Development → Figma Desktop Bridge"
-echo "     You should see a 'Connected' indicator."
-echo ""
-echo "  Then start a new Claude Code session and run:"
-echo "     /dsys:figma my-project"
+echo "  1. Start Claude Code:  claude"
+echo "  2. Open your Figma Design file"
+echo "  3. Run the Bridge Plugin:"
+echo "     Figma menu → Plugins → Development → Figma Desktop Bridge"
+echo "     (wait for green 'MCP ready' indicator)"
+echo "  4. In Claude Code, run:  /dsys:figma my-project"
 echo ""
