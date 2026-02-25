@@ -1,7 +1,7 @@
 ---
 name: dsys-figma-generator
 description: Reads design-system.json and creates native Figma Variables, Styles, and Components via figma-console-mcp
-tools: Read, figma_create_variable_collection, figma_batch_create_variables, figma_setup_design_tokens, figma_update_variable, figma_add_mode, figma_execute, figma_arrange_component_set, figma_set_description
+tools: Read, figma_create_variable_collection, figma_batch_create_variables, figma_setup_design_tokens, figma_update_variable, figma_add_mode, figma_execute, figma_set_description
 ---
 
 ## Role
@@ -568,7 +568,31 @@ for (const variant of variants) {
 const set = figma.combineAsVariants(components, figma.currentPage);
 set.name = "Button";
 
-return { setId: set.id, setName: set.name, variantCount: components.length };
+// Arrange variants in a grid (rows = styles, cols = sizes)
+const GAP = 40;
+const numCols = sizes.length;
+const children = [...set.children];
+const numRows = Math.ceil(children.length / numCols);
+const colWidths = new Array(numCols).fill(0);
+const rowHeights = new Array(numRows).fill(0);
+for (let i = 0; i < children.length; i++) {
+  colWidths[i % numCols] = Math.max(colWidths[i % numCols], children[i].width);
+  rowHeights[Math.floor(i / numCols)] = Math.max(rowHeights[Math.floor(i / numCols)], children[i].height);
+}
+for (let i = 0; i < children.length; i++) {
+  const col = i % numCols;
+  const row = Math.floor(i / numCols);
+  let x = 0; for (let c = 0; c < col; c++) x += colWidths[c] + GAP;
+  let y = 0; for (let r = 0; r < row; r++) y += rowHeights[r] + GAP;
+  children[i].x = x;
+  children[i].y = y;
+}
+set.resize(
+  colWidths.reduce((a, b) => a + b, 0) + (numCols - 1) * GAP,
+  rowHeights.reduce((a, b) => a + b, 0) + (numRows - 1) * GAP
+);
+
+return { setId: set.id, setName: set.name, variantCount: children.length, grid: `${numRows}x${numCols}` };
 ```
 
 **Important:**
@@ -578,11 +602,6 @@ return { setId: set.id, setName: set.name, variantCount: components.length };
 - `{spacing_4}` should be the numeric px value (e.g., 16) — NOT a string with "px"
 - Set `timeout: 30000` for component creation calls
 - If font loading fails, fall back to "Inter"
-
-After the `figma_execute` call returns, call `figma_arrange_component_set` with the returned `setId` to arrange the 15 variants in a labeled grid:
-```
-componentSetId: "{setId from the figma_execute result}"
-```
 
 ### Step 11c: Create Card Component
 
@@ -677,10 +696,33 @@ for (const size of sizes) {
 
 const set = figma.combineAsVariants(components, figma.currentPage);
 set.name = "Input";
-return { setId: set.id, variantCount: components.length };
-```
 
-After creation, call `figma_arrange_component_set` with the returned `setId` to arrange the 3 size variants.
+// Arrange variants in a row
+const GAP = 40;
+const numCols = sizes.length;
+const children = [...set.children];
+const numRows = Math.ceil(children.length / numCols);
+const colWidths = new Array(numCols).fill(0);
+const rowHeights = new Array(numRows).fill(0);
+for (let i = 0; i < children.length; i++) {
+  colWidths[i % numCols] = Math.max(colWidths[i % numCols], children[i].width);
+  rowHeights[Math.floor(i / numCols)] = Math.max(rowHeights[Math.floor(i / numCols)], children[i].height);
+}
+for (let i = 0; i < children.length; i++) {
+  const col = i % numCols;
+  const row = Math.floor(i / numCols);
+  let x = 0; for (let c = 0; c < col; c++) x += colWidths[c] + GAP;
+  let y = 0; for (let r = 0; r < row; r++) y += rowHeights[r] + GAP;
+  children[i].x = x;
+  children[i].y = y;
+}
+set.resize(
+  colWidths.reduce((a, b) => a + b, 0) + (numCols - 1) * GAP,
+  rowHeights.reduce((a, b) => a + b, 0) + (numRows - 1) * GAP
+);
+
+return { setId: set.id, variantCount: children.length, grid: `${numRows}x${numCols}` };
+```
 
 ### Step 11e: Create Badge Component Set
 
@@ -725,7 +767,32 @@ for (const v of variants) {
 
 const set = figma.combineAsVariants(components, figma.currentPage);
 set.name = "Badge";
-return { setId: set.id, variantCount: components.length };
+
+// Arrange variants in a row
+const GAP = 40;
+const numCols = variants.length;
+const children = [...set.children];
+const numRows = Math.ceil(children.length / numCols);
+const colWidths = new Array(numCols).fill(0);
+const rowHeights = new Array(numRows).fill(0);
+for (let i = 0; i < children.length; i++) {
+  colWidths[i % numCols] = Math.max(colWidths[i % numCols], children[i].width);
+  rowHeights[Math.floor(i / numCols)] = Math.max(rowHeights[Math.floor(i / numCols)], children[i].height);
+}
+for (let i = 0; i < children.length; i++) {
+  const col = i % numCols;
+  const row = Math.floor(i / numCols);
+  let x = 0; for (let c = 0; c < col; c++) x += colWidths[c] + GAP;
+  let y = 0; for (let r = 0; r < row; r++) y += rowHeights[r] + GAP;
+  children[i].x = x;
+  children[i].y = y;
+}
+set.resize(
+  colWidths.reduce((a, b) => a + b, 0) + (numCols - 1) * GAP,
+  rowHeights.reduce((a, b) => a + b, 0) + (numRows - 1) * GAP
+);
+
+return { setId: set.id, variantCount: children.length, grid: `${numRows}x${numCols}` };
 ```
 
 **Note on `{feedback_success_light_rgb_10}` (10% opacity fills):** Compute by blending the feedback color at 10% opacity over white:
@@ -735,8 +802,6 @@ blended_g = 1.0 + (original_g - 1.0) * 0.1
 blended_b = 1.0 + (original_b - 1.0) * 0.1
 ```
 Or use `{ type: "SOLID", color: original_rgb, opacity: 0.1 }` in the fills array.
-
-After creation, call `figma_arrange_component_set` with the returned `setId` to arrange the 5 badge variants.
 
 ### Step 11f: Create Heading Component Set
 
@@ -774,10 +839,33 @@ for (const level of levels) {
 
 const set = figma.combineAsVariants(components, figma.currentPage);
 set.name = "Heading";
-return { setId: set.id, variantCount: components.length };
-```
 
-After creation, call `figma_arrange_component_set` with the returned `setId` to arrange the 4 heading level variants.
+// Arrange variants in a row
+const GAP = 40;
+const numCols = levels.length;
+const children = [...set.children];
+const numRows = Math.ceil(children.length / numCols);
+const colWidths = new Array(numCols).fill(0);
+const rowHeights = new Array(numRows).fill(0);
+for (let i = 0; i < children.length; i++) {
+  colWidths[i % numCols] = Math.max(colWidths[i % numCols], children[i].width);
+  rowHeights[Math.floor(i / numCols)] = Math.max(rowHeights[Math.floor(i / numCols)], children[i].height);
+}
+for (let i = 0; i < children.length; i++) {
+  const col = i % numCols;
+  const row = Math.floor(i / numCols);
+  let x = 0; for (let c = 0; c < col; c++) x += colWidths[c] + GAP;
+  let y = 0; for (let r = 0; r < row; r++) y += rowHeights[r] + GAP;
+  children[i].x = x;
+  children[i].y = y;
+}
+set.resize(
+  colWidths.reduce((a, b) => a + b, 0) + (numCols - 1) * GAP,
+  rowHeights.reduce((a, b) => a + b, 0) + (numRows - 1) * GAP
+);
+
+return { setId: set.id, variantCount: children.length, grid: `${numRows}x${numCols}` };
+```
 
 ### Step 11g: Create Text Component Set
 
@@ -819,10 +907,33 @@ for (const v of textVariants) {
 
 const set = figma.combineAsVariants(components, figma.currentPage);
 set.name = "Text";
-return { setId: set.id, variantCount: components.length };
-```
 
-After creation, call `figma_arrange_component_set` with the returned `setId` to arrange the 9 text variants in a grid.
+// Arrange variants in a grid
+const GAP = 40;
+const numCols = Math.ceil(Math.sqrt(textVariants.length));
+const children = [...set.children];
+const numRows = Math.ceil(children.length / numCols);
+const colWidths = new Array(numCols).fill(0);
+const rowHeights = new Array(numRows).fill(0);
+for (let i = 0; i < children.length; i++) {
+  colWidths[i % numCols] = Math.max(colWidths[i % numCols], children[i].width);
+  rowHeights[Math.floor(i / numCols)] = Math.max(rowHeights[Math.floor(i / numCols)], children[i].height);
+}
+for (let i = 0; i < children.length; i++) {
+  const col = i % numCols;
+  const row = Math.floor(i / numCols);
+  let x = 0; for (let c = 0; c < col; c++) x += colWidths[c] + GAP;
+  let y = 0; for (let r = 0; r < row; r++) y += rowHeights[r] + GAP;
+  children[i].x = x;
+  children[i].y = y;
+}
+set.resize(
+  colWidths.reduce((a, b) => a + b, 0) + (numCols - 1) * GAP,
+  rowHeights.reduce((a, b) => a + b, 0) + (numRows - 1) * GAP
+);
+
+return { setId: set.id, variantCount: children.length, grid: `${numRows}x${numCols}` };
+```
 
 ### Step 11h: Position Component Sets on Page
 
