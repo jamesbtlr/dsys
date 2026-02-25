@@ -467,14 +467,20 @@ return results;
 
 Use `figma_execute` to create components on a dedicated "Components" page. This is the most complex phase.
 
-### Step 11a: Create Components Page
+### Step 11a: Create or Reuse Components Page
+
+If a "Components" page already exists (from a previous run), reuse it instead of creating a duplicate.
 
 ```javascript
-// figma_execute: Create Components page
-const page = figma.createPage();
-page.name = "Components";
+// figma_execute: Create or reuse Components page
+let page = figma.root.children.find(p => p.name === "Components");
+const reused = !!page;
+if (!page) {
+  page = figma.createPage();
+  page.name = "Components";
+}
 figma.currentPage = page;
-return { pageId: page.id, pageName: page.name };
+return { pageId: page.id, pageName: page.name, reused };
 ```
 
 ### Step 11b: Create Button Component Set
@@ -566,6 +572,11 @@ return { setId: set.id, setName: set.name, variantCount: components.length };
 - `{spacing_4}` should be the numeric px value (e.g., 16) — NOT a string with "px"
 - Set `timeout: 30000` for component creation calls
 - If font loading fails, fall back to "Inter"
+
+After the `figma_execute` call returns, call `figma_arrange_component_set` with the returned `setId` to arrange the 15 variants in a labeled grid:
+```
+componentSetId: "{setId from the figma_execute result}"
+```
 
 ### Step 11c: Create Card Component
 
@@ -662,6 +673,8 @@ set.name = "Input";
 return { setId: set.id, variantCount: components.length };
 ```
 
+After creation, call `figma_arrange_component_set` with the returned `setId` to arrange the 3 size variants.
+
 ### Step 11e: Create Badge Component Set
 
 ```javascript
@@ -716,6 +729,8 @@ blended_b = 1.0 + (original_b - 1.0) * 0.1
 ```
 Or use `{ type: "SOLID", color: original_rgb, opacity: 0.1 }` in the fills array.
 
+After creation, call `figma_arrange_component_set` with the returned `setId` to arrange the 5 badge variants.
+
 ### Step 11f: Create Heading Component Set
 
 ```javascript
@@ -754,6 +769,8 @@ const set = figma.combineAsVariants(components, figma.currentPage);
 set.name = "Heading";
 return { setId: set.id, variantCount: components.length };
 ```
+
+After creation, call `figma_arrange_component_set` with the returned `setId` to arrange the 4 heading level variants.
 
 ### Step 11g: Create Text Component Set
 
@@ -797,6 +814,34 @@ const set = figma.combineAsVariants(components, figma.currentPage);
 set.name = "Text";
 return { setId: set.id, variantCount: components.length };
 ```
+
+After creation, call `figma_arrange_component_set` with the returned `setId` to arrange the 9 text variants in a grid.
+
+### Step 11h: Position Component Sets on Page
+
+After all components are created and arranged, run a final `figma_execute` to position them so they don't overlap. This reads actual node dimensions and stacks them vertically with generous spacing.
+
+```javascript
+// figma_execute: Position all component sets on the Components page
+const nodes = figma.currentPage.children.filter(n =>
+  n.type === "COMPONENT_SET" || n.type === "COMPONENT"
+);
+
+let yOffset = 0;
+const yGap = 120;
+
+for (const node of nodes) {
+  node.x = 0;
+  node.y = yOffset;
+  yOffset += node.height + yGap;
+}
+
+return {
+  positioned: nodes.map(n => ({ name: n.name, x: n.x, y: n.y, width: Math.round(n.width), height: Math.round(n.height) }))
+};
+```
+
+This positions the component sets in a vertical stack: Button at top, then Card, Input, Badge, Heading, Text — each spaced 120px apart.
 
 ---
 
@@ -1625,6 +1670,7 @@ Before returning, verify each item in this checklist by reviewing the results of
 - [ ] Badge component set with 5 variants
 - [ ] Heading component set with 4 variants (levels 1-4)
 - [ ] Text component set with 9 variants (3 colors × 3 sizes)
+- [ ] All component sets positioned without overlap (Step 11h)
 
 **Preview Page:**
 - [ ] "Preview" page created (separate from Components page)
