@@ -248,6 +248,26 @@ Write the updated state file.
 
 ---
 
+## Step 6.5: Dispatch Preview Generator
+
+Display:
+```
+Creating Preview page...
+```
+
+Issue Task:
+```
+Task(
+  agent: "skills/dsys/agents/figma-preview-generator.md",
+  prompt: "design_system_path: .dsys/{name}/design-system.json
+project_name: {name}"
+)
+```
+
+If the result starts with `Error:`: display a warning but do NOT fail the overall stage. The preview is supplementary — the core design system (Variables, Styles, Components) is already complete.
+
+---
+
 ## Step 7: End-of-Run Summary
 
 Read `.dsys/{name}/design-system.json` to extract:
