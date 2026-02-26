@@ -191,6 +191,58 @@ date -u +"%Y-%m-%dT%H:%M:%SZ"
 
 ---
 
+## Step 5c: Extract Color Palettes (Optional Enhancement)
+
+Before launching analysis agents, attempt to extract a programmatic color palette from each screenshot using ImageMagick. This provides pixel-accurate ground truth colors that dramatically improve the analyzer's color accuracy.
+
+**Check for ImageMagick:**
+```bash
+which magick 2>/dev/null && echo "AVAILABLE" || echo "UNAVAILABLE"
+```
+
+**If UNAVAILABLE:** Display a tip and skip this step:
+```
+Tip: Install ImageMagick for more accurate color extraction: brew install imagemagick
+Continuing with vision-only analysis...
+```
+Set `palette_available` to `false` and proceed directly to Step 6.
+
+**If AVAILABLE:** Set `palette_available` to `true`. For each path in `valid_paths`, run:
+
+```bash
+magick "{absolute_path}" -resize 200x200 -quantize sRGB -colors 16 -format "%c" histogram:info: | sort -rn | head -16
+```
+
+Parse each line of output to extract the hex color and pixel count. Each line has the format:
+```
+     5574: (14.2163,17.0329,14.7983,254.993) #0E110FFF srgba(...)
+```
+
+Extract:
+- **pixel_count**: the number before the first colon (trimmed)
+- **hex**: the 6-character hex code (take only the first 6 characters after `#`, ignoring the alpha `FF` suffix)
+
+Calculate the total pixel count across all colors, then compute each color's percentage.
+
+Write the palette to `.dsys/{name}/findings/{basename_without_extension}-palette.json`:
+
+```json
+{
+  "source": "imagemagick_histogram",
+  "total_pixels": 40000,
+  "colors": [
+    { "hex": "#1B221C", "pixel_count": 11880, "percentage": 29.7 },
+    { "hex": "#344C35", "pixel_count": 5422, "percentage": 13.5 }
+  ]
+}
+```
+
+**Order by pixel_count descending.** Include all 16 colors (or fewer if the image has fewer distinct colors).
+
+If the `magick` command fails for a specific image (e.g., corrupt file), log a warning and set that image's palette path to null — the analyzer will fall back to vision-only mode for that image.
+
+---
+
 ## Step 6: Stage 1 — Parallel Analysis
 
 Display banner:
@@ -209,7 +261,18 @@ mkdir -p .dsys/{name}/findings/
 
 **CRITICAL: Issue ALL analyzer Task calls in a SINGLE response turn. Do NOT issue one Task and wait for its result before issuing the next. All N Task calls must appear in the same response for parallel execution.**
 
-For each path in `valid_paths`, issue a Task call with this exact format:
+For each path in `valid_paths`, issue a Task call. **If `palette_available` is `true` and a palette file was written for this image**, include the `palette_path` parameter:
+
+```
+Task(
+  agent: "skills/dsys/agents/analyzer.md",
+  prompt: "image_path: {absolute_path}
+output_path: .dsys/{name}/findings/{basename_without_extension}.json
+palette_path: .dsys/{name}/findings/{basename_without_extension}-palette.json"
+)
+```
+
+**If palette is unavailable for this image** (ImageMagick not installed, or extraction failed), omit `palette_path`:
 
 ```
 Task(
@@ -223,20 +286,23 @@ Where `{basename_without_extension}` is the filename without its extension (e.g.
 
 Issue ALL Task calls now, before collecting any result.
 
-Example — if there are 3 screenshots, the response issues exactly 3 Task calls simultaneously:
+Example — if there are 3 screenshots and palettes were extracted:
 
 ```
 Task 1: agent=skills/dsys/agents/analyzer.md
   image_path: /abs/path/to/hero.png
   output_path: .dsys/luxora/findings/hero.json
+  palette_path: .dsys/luxora/findings/hero-palette.json
 
 Task 2: agent=skills/dsys/agents/analyzer.md
   image_path: /abs/path/to/dashboard.png
   output_path: .dsys/luxora/findings/dashboard.json
+  palette_path: .dsys/luxora/findings/dashboard-palette.json
 
 Task 3: agent=skills/dsys/agents/analyzer.md
   image_path: /abs/path/to/card.png
   output_path: .dsys/luxora/findings/card.json
+  palette_path: .dsys/luxora/findings/card-palette.json
 ```
 
 After all Tasks complete, collect each Task's return string.

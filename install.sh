@@ -170,3 +170,10 @@ echo ""
 echo "  Check progress anytime:"
 echo "    /dsys:status"
 echo ""
+
+# Check for ImageMagick (optional enhancement)
+if ! which magick >/dev/null 2>&1; then
+  echo "  Optional: Install ImageMagick for more accurate color extraction:"
+  echo "    brew install imagemagick"
+  echo ""
+fi
