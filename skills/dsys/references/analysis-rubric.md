@@ -54,7 +54,7 @@ Extract the dominant color palette. Aim for 4–10 colors covering the visible U
 - Are there destructive actions (delete, remove, danger)? → `action.destructive`
 - Are there success/error/warning states visible? → `feedback.success`, `feedback.error`, `feedback.warning`
 
-**Color observation rule:** Report the color you actually see in the screenshot. Do NOT attempt to match observed colors to Tailwind, Material, Apple HIG, or any other standard palette. Most designs use custom brand colors. A dark forest green button is NOT "Tailwind Green 500" — report the actual dark green you observe. If you notice a close match to a known palette color (within ±5 per RGB channel), note it in the rationale string, but always report the observed value as the hex. Acknowledge estimation uncertainty in your confidence rating.
+**Color observation rule:** When a programmatic palette is available (see analyzer Step 1c), use it as the ground truth source for hex values — select the closest palette color for each role, then use your vision to assign semantic meaning. When no palette is available, report the color you actually see in the screenshot. In both cases: do NOT attempt to match observed colors to Tailwind, Material, Apple HIG, or any other standard palette. Most designs use custom brand colors. A dark forest green button is NOT "Tailwind Green 500" — use the actual measured or observed dark green. If you notice a close match to a known palette color (within ±5 per RGB channel), note it in the rationale string, but always report the measured/observed value as the hex.
 
 **Dark buttons with light text.** When a button has white or near-white text, the button background is necessarily dark (L* < 35) to maintain readable contrast. If you observe a CTA button with white text, your extracted color for that button MUST be dark — not a medium-lightness color. Common mistake: seeing a dark green button (#142E1A) and reporting a medium green (#4E7A3E) because the surrounding context (green-tinted imagery, green background) biases perception lighter. Always ask: "Would white text be readable on the color I'm reporting?" If not, your color is too light — darken it.
 
@@ -155,6 +155,15 @@ Identify the radius applied at each size tier:
 
 Also record:
 - `full`: Set to `true` if fully-rounded pill shapes appear prominently (e.g., 9999px radius tags or toggle buttons). Set to `false` if no fully-rounded elements appear. Set to `null` if uncertain.
+
+**PILL SHAPE CHECK (mandatory post-estimation):** After estimating border radius tiers, explicitly check — are there any elements where the corner radius appears to equal half the element height, creating a capsule/stadium shape? Common pill-shaped elements include:
+- Primary CTA buttons (e.g., "Get Started", "Sign Up", "Go Shopping")
+- Category filter chips or toggle pills
+- Badge/tag elements
+- Navigation pills or segment controls
+- Search bars with fully rounded ends
+
+If you observe ANY pill-shaped elements, `full` MUST be `true`. A button whose ends curve into complete semicircles is a pill shape — its effective radius is 9999px (or half the element height). Do NOT underestimate pill shapes as 8-16px. If white text sits on a colored button and the button's left and right edges are perfect semicircles, that is a pill button with `full: true`.
 
 If border radius is not determinable (very blurry or mostly square UI), set `border_radius` to `null`.
 
@@ -342,4 +351,4 @@ When analyzing a `ui_screenshot`, assign hex values to all semantic color roles 
 - "Inferred" = you did not observe this in the screenshot but can reasonably infer the value based on common light/dark design patterns and the observed palette.
 - "Observed or null" = report if visible, otherwise `null`.
 - "Inferred or null" = infer if possible, otherwise `null`.
-- Feedback colors often follow universal conventions: success → green family, error → red family, warning → amber/orange family, info → blue family. If these colors appear in the screenshot, assign them. If not observed, infer plausible values from the palette if a green/red/amber is present, otherwise `null`.
+- Only assign feedback colors if you observe actual success/error/warning/info states in the screenshot (e.g., a visible error message, a green checkmark, a yellow warning banner). If no such states are visible, set these to `null`. Do NOT invent generic red/amber/blue colors — fabricated feedback colors that don't match the app's palette are worse than null. The synthesizer will derive palette-harmonized feedback colors from the primitive palette when needed.

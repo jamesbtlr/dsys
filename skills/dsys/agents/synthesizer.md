@@ -155,6 +155,19 @@ These 4 tokens are REQUIRED in design-system.json but have NO corresponding find
 | `text.secondary` | Perceptual midpoint between `text.primary` and `text.muted` light values. For dark: midpoint between their dark values. Document in `$description`: `"Derived: midpoint between text.primary and text.muted"` |
 | `text.link` | Same hex as `action.primary` (light value). Same as `action.primary` dark value for dark. Document in `$description`: `"Derived: same as action.primary — hyperlinks use the primary action color"` |
 
+### Feedback Color Derivation (when findings return null)
+
+When all findings return `null` for feedback color keys, derive from the **resolved primitive palette** — NOT from generic Tailwind/Material colors. The goal is feedback colors that harmonize with the app's actual brand palette.
+
+| Token | Derivation Rule |
+|-------|----------------|
+| `feedback.success` | Find the greenest hue (hue 80°–160°) in the resolved primitive palette. If the primary action color is already green, use a slightly different shade (±20 lightness). If no green exists in the palette, derive a green that matches the palette's saturation family (e.g., if the palette is muted/desaturated, use a muted green; if vibrant, use a vibrant green). Document in `$description`: `"Derived from palette hue family — no success state observed in benchmarks"` |
+| `feedback.error` | Find the warmest/reddest hue (hue 340°–20°) in the resolved primitive palette. If none exists, derive a red that harmonizes with the primary action color — match the saturation level and use a similar lightness range. Document in `$description`: `"Derived from palette hue family — no error state observed in benchmarks"` |
+| `feedback.warning` | Find the warmest non-red hue (hue 20°–60°, amber/orange family) in the resolved primitive palette. If none exists, derive an amber that matches the palette's saturation and lightness characteristics. Document in `$description`: `"Derived from palette hue family — no warning state observed in benchmarks"` |
+| `feedback.info` | Use a desaturated or lightened version of the primary action color. If the primary is already blue-ish, adjust lightness only. If the primary is a non-blue color, find the nearest cool hue in the palette, or derive a blue that matches the palette's saturation level. Document in `$description`: `"Derived from primary action color — no info state observed in benchmarks"` |
+
+**Key constraint:** Derived feedback colors MUST share the same saturation and lightness character as the resolved primitive palette. A vibrant neon-green app should get vibrant feedback colors; a muted earth-toned app should get muted feedback colors. Never default to generic Tailwind values like `#EF4444` / `#22C55E` / `#EAB308` / `#3B82F6`.
+
 ### Step 4b: Dark-Mode Derivation Heuristics
 
 When a `_dark` key is null in ALL findings, apply these heuristics:
@@ -391,146 +404,113 @@ Example: `Synthesized 3 findings → design-system.json: Clean minimal SaaS with
 
 ## Output Template
 
-Fill this template by replacing all values with the merge pass results. The structure must match exactly — do not add or remove fields.
+Replace ALL placeholder strings below with actual resolved values from the merge passes above. No placeholder text should remain in the output. Every `RESOLVED_*` marker must be replaced with the real value computed during synthesis.
 
 ```json
 {
   "meta": {
-    "generated_at": "2026-02-17T18:00:00Z",
-    "source_count": 4,
+    "generated_at": "RESOLVED_ISO8601_TIMESTAMP",
+    "source_count": "RESOLVED_SOURCE_COUNT",
     "source_types": {
-      "ui_screenshots": 3,
-      "visual_references": 1
+      "ui_screenshots": "RESOLVED_UI_COUNT",
+      "visual_references": "RESOLVED_VR_COUNT"
     },
-    "aesthetic_summary": "Clean and professional with generous whitespace. Monochromatic palette anchored by a single strong blue accent. Conveys trust and precision — appropriate for productivity and data-heavy SaaS applications.",
-    "dominant_approach": "Clean SaaS with blue accent",
-    "conflict_log": [
-      {
-        "token": "tokens.color.semantic.action.primary",
-        "candidates": ["#3B82F6", "#2563EB", "#3B82F6", "#3B82F6"],
-        "chosen": "#3B82F6",
-        "rationale": "Majority vote: 3/4 sources used #3B82F6; one source used a darker shade likely from a pressed state."
-      }
-    ]
+    "aesthetic_summary": "RESOLVED_AESTHETIC_SUMMARY",
+    "dominant_approach": "RESOLVED_DOMINANT_APPROACH",
+    "conflict_log": ["RESOLVED_CONFLICT_LOG_ARRAY"]
   },
   "tokens": {
     "color": {
       "primitive": {
         "$type": "color",
-        "blue": {
-          "400": { "$value": "#60A5FA", "$description": "Blue 400 — hover and focus blue" },
-          "500": { "$value": "#3B82F6", "$description": "Blue 500 — primary brand blue" },
-          "600": { "$value": "#2563EB", "$description": "Blue 600 — pressed/active blue" },
-          "700": { "$value": "#1D4ED8", "$description": "Blue 700 — dark mode primary" }
+        "RESOLVED_HUE_FAMILY_1": {
+          "RESOLVED_SHADE": { "$value": "RESOLVED_HEX", "$description": "RESOLVED_DESCRIPTION" }
         },
-        "gray": {
-          "50":  { "$value": "#F9FAFB" },
-          "100": { "$value": "#F3F4F6" },
-          "200": { "$value": "#E5E7EB" },
-          "300": { "$value": "#D1D5DB" },
-          "400": { "$value": "#9CA3AF" },
-          "500": { "$value": "#6B7280" },
-          "700": { "$value": "#374151" },
-          "800": { "$value": "#1F2937" },
-          "900": { "$value": "#111827" },
-          "950": { "$value": "#030712" }
-        },
-        "red": {
-          "500": { "$value": "#EF4444" },
-          "400": { "$value": "#F87171" }
-        },
-        "green": {
-          "500": { "$value": "#22C55E" },
-          "400": { "$value": "#4ADE80" }
-        },
-        "yellow": {
-          "500": { "$value": "#EAB308" },
-          "400": { "$value": "#FACC15" }
-        },
-        "white": { "$value": "#FFFFFF" },
-        "black": { "$value": "#000000" }
+        "RESOLVED_HUE_FAMILY_2": {
+          "RESOLVED_SHADE": { "$value": "RESOLVED_HEX" }
+        }
       },
       "semantic": {
         "$type": "color",
         "action": {
           "primary": {
-            "$value": { "light": "{tokens.color.primitive.blue.500}", "dark": "{tokens.color.primitive.blue.400}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Primary interactive elements: buttons, links, selected states"
           },
           "secondary": {
-            "$value": { "light": "{tokens.color.primitive.gray.200}", "dark": "{tokens.color.primitive.gray.700}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Secondary/ghost interactive elements"
           },
           "destructive": {
-            "$value": { "light": "{tokens.color.primitive.red.500}", "dark": "{tokens.color.primitive.red.400}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Danger actions: delete, remove, irreversible operations"
           }
         },
         "surface": {
           "default": {
-            "$value": { "light": "{tokens.color.primitive.gray.50}", "dark": "{tokens.color.primitive.gray.950}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Default page background"
           },
           "raised": {
-            "$value": { "light": "{tokens.color.primitive.white}", "dark": "{tokens.color.primitive.gray.900}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Card/elevated surface, above default"
           },
           "overlay": {
-            "$value": { "light": "{tokens.color.primitive.white}", "dark": "{tokens.color.primitive.gray.800}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Derived: surface.default lightened for modal/drawer backgrounds"
           },
           "inset": {
-            "$value": { "light": "{tokens.color.primitive.gray.100}", "dark": "{tokens.color.primitive.gray.800}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Derived: surface.default darkened for recessed surfaces (inputs, code blocks)"
           }
         },
         "text": {
           "primary": {
-            "$value": { "light": "{tokens.color.primitive.gray.900}", "dark": "{tokens.color.primitive.gray.50}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Primary body text and headings"
           },
           "secondary": {
-            "$value": { "light": "{tokens.color.primitive.gray.700}", "dark": "{tokens.color.primitive.gray.300}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Derived: midpoint between text.primary and text.muted"
           },
           "muted": {
-            "$value": { "light": "{tokens.color.primitive.gray.500}", "dark": "{tokens.color.primitive.gray.400}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Disabled, placeholder, and caption text"
           },
           "inverse": {
-            "$value": "#FFFFFF",
-            "$description": "Text on colored surfaces (e.g., white text on blue button)"
+            "$value": "RESOLVED_HEX",
+            "$description": "Text on colored surfaces (e.g., white text on colored button)"
           },
           "link": {
-            "$value": { "light": "{tokens.color.primitive.blue.500}", "dark": "{tokens.color.primitive.blue.400}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Derived: same as action.primary — hyperlinks use the primary action color"
           }
         },
         "border": {
           "default": {
-            "$value": { "light": "{tokens.color.primitive.gray.200}", "dark": "{tokens.color.primitive.gray.700}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Standard borders and dividers"
           },
           "focus": {
-            "$value": { "light": "{tokens.color.primitive.blue.500}", "dark": "{tokens.color.primitive.blue.400}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Focus ring color (accessibility)"
           }
         },
         "feedback": {
           "success": {
-            "$value": { "light": "{tokens.color.primitive.green.500}", "dark": "{tokens.color.primitive.green.400}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Success states and confirmations"
           },
           "error": {
-            "$value": { "light": "{tokens.color.primitive.red.500}", "dark": "{tokens.color.primitive.red.400}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Error and destructive states"
           },
           "warning": {
-            "$value": { "light": "{tokens.color.primitive.yellow.500}", "dark": "{tokens.color.primitive.yellow.400}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Warning states"
           },
           "info": {
-            "$value": { "light": "{tokens.color.primitive.blue.500}", "dark": "{tokens.color.primitive.blue.400}" },
+            "$value": { "light": "RESOLVED_PRIMITIVE_REF_OR_HEX", "dark": "RESOLVED_PRIMITIVE_REF_OR_HEX" },
             "$description": "Informational states"
           }
         }
@@ -539,28 +519,28 @@ Fill this template by replacing all values with the merge pass results. The stru
     "typography": {
       "font_family": {
         "sans": {
-          "$value": "Inter",
+          "$value": "RESOLVED_FONT_NAME_OR_NULL",
           "$type": "fontFamily",
-          "fallback_stack": ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"]
+          "fallback_stack": ["RESOLVED_FALLBACK_FONTS"]
         },
         "mono": {
-          "$value": "JetBrains Mono",
+          "$value": "RESOLVED_FONT_NAME_OR_NULL",
           "$type": "fontFamily",
-          "fallback_stack": ["Fira Code", "Cascadia Code", "monospace"]
+          "fallback_stack": ["RESOLVED_FALLBACK_FONTS"]
         },
-        "display": null
+        "display": "RESOLVED_FONT_NAME_OR_NULL"
       },
       "scale": {
         "$type": "dimension",
-        "xs":   { "$value": "12px" },
-        "sm":   { "$value": "14px" },
-        "base": { "$value": "16px" },
-        "lg":   { "$value": "18px" },
-        "xl":   { "$value": "20px" },
-        "2xl":  { "$value": "24px" },
-        "3xl":  { "$value": "30px" },
-        "4xl":  { "$value": "36px" },
-        "5xl":  { "$value": "48px" }
+        "xs":   { "$value": "RESOLVED_PX" },
+        "sm":   { "$value": "RESOLVED_PX" },
+        "base": { "$value": "RESOLVED_PX" },
+        "lg":   { "$value": "RESOLVED_PX" },
+        "xl":   { "$value": "RESOLVED_PX" },
+        "2xl":  { "$value": "RESOLVED_PX" },
+        "3xl":  { "$value": "RESOLVED_PX" },
+        "4xl":  { "$value": "RESOLVED_PX" },
+        "5xl":  { "$value": "RESOLVED_PX" }
       },
       "weight": {
         "$type": "fontWeight",
@@ -578,75 +558,48 @@ Fill this template by replacing all values with the merge pass results. The stru
       }
     },
     "spacing": {
-      "base_unit": 4,
+      "base_unit": "RESOLVED_BASE_UNIT",
       "scale": {
         "$type": "dimension",
-        "1":  { "$value": "4px"   },
-        "2":  { "$value": "8px"   },
-        "3":  { "$value": "12px"  },
-        "4":  { "$value": "16px"  },
-        "5":  { "$value": "20px"  },
-        "6":  { "$value": "24px"  },
-        "8":  { "$value": "32px"  },
-        "10": { "$value": "40px"  },
-        "12": { "$value": "48px"  },
-        "16": { "$value": "64px"  },
-        "20": { "$value": "80px"  },
-        "24": { "$value": "96px"  },
-        "32": { "$value": "128px" }
+        "1":  { "$value": "RESOLVED_PX" },
+        "2":  { "$value": "RESOLVED_PX" },
+        "3":  { "$value": "RESOLVED_PX" },
+        "4":  { "$value": "RESOLVED_PX" },
+        "5":  { "$value": "RESOLVED_PX" },
+        "6":  { "$value": "RESOLVED_PX" },
+        "8":  { "$value": "RESOLVED_PX" },
+        "10": { "$value": "RESOLVED_PX" },
+        "12": { "$value": "RESOLVED_PX" },
+        "16": { "$value": "RESOLVED_PX" },
+        "20": { "$value": "RESOLVED_PX" },
+        "24": { "$value": "RESOLVED_PX" },
+        "32": { "$value": "RESOLVED_PX" }
       },
       "semantic": {
         "$type": "dimension",
-        "component-gap":   { "$value": "{tokens.spacing.scale.3}", "$description": "Gap between components in a layout" },
-        "section-padding": { "$value": "{tokens.spacing.scale.6}", "$description": "Padding around major content sections" },
-        "page-margin":     { "$value": "{tokens.spacing.scale.8}", "$description": "Outer page margin / container padding" },
-        "input-padding":   { "$value": "{tokens.spacing.scale.3}", "$description": "Internal padding inside form inputs" },
-        "card-padding":    { "$value": "{tokens.spacing.scale.6}", "$description": "Internal padding inside card/panel surfaces" },
-        "stack-gap":       { "$value": "{tokens.spacing.scale.4}", "$description": "Gap in vertical/horizontal stack layouts" }
+        "component-gap":   { "$value": "RESOLVED_SCALE_REF", "$description": "Gap between components in a layout" },
+        "section-padding": { "$value": "RESOLVED_SCALE_REF", "$description": "Padding around major content sections" },
+        "page-margin":     { "$value": "RESOLVED_SCALE_REF", "$description": "Outer page margin / container padding" },
+        "input-padding":   { "$value": "RESOLVED_SCALE_REF", "$description": "Internal padding inside form inputs" },
+        "card-padding":    { "$value": "RESOLVED_SCALE_REF", "$description": "Internal padding inside card/panel surfaces" },
+        "stack-gap":       { "$value": "RESOLVED_SCALE_REF", "$description": "Gap in vertical/horizontal stack layouts" }
       }
     },
-    "shadow": [
-      {
-        "$value": { "offsetX": "0px", "offsetY": "1px", "blur": "3px", "spread": "0px", "color": "#00000014" },
-        "$type": "shadow",
-        "elevation": "sm"
-      },
-      {
-        "$value": { "offsetX": "0px", "offsetY": "4px", "blur": "12px", "spread": "0px", "color": "#00000026" },
-        "$type": "shadow",
-        "elevation": "md"
-      },
-      {
-        "$value": { "offsetX": "0px", "offsetY": "8px", "blur": "24px", "spread": "-4px", "color": "#0000003D" },
-        "$type": "shadow",
-        "elevation": "lg"
-      },
-      {
-        "$value": { "offsetX": "0px", "offsetY": "16px", "blur": "48px", "spread": "-8px", "color": "#00000052" },
-        "$type": "shadow",
-        "elevation": "xl"
-      }
-    ],
+    "shadow": "RESOLVED_SHADOW_ARRAY_OR_NULL",
     "border_radius": {
       "$type": "dimension",
-      "sm":   { "$value": "4px"    },
-      "md":   { "$value": "8px"    },
-      "lg":   { "$value": "12px"   },
-      "full": { "$value": "9999px" }
+      "sm":   { "$value": "RESOLVED_PX" },
+      "md":   { "$value": "RESOLVED_PX" },
+      "lg":   { "$value": "RESOLVED_PX" },
+      "full": { "$value": "RESOLVED_PX" }
     },
-    "opacity": {
-      "$type": "number",
-      "subtle":   { "$value": 0.06, "$description": "Very light overlay or hover tint" },
-      "disabled": { "$value": 0.4,  "$description": "Disabled element opacity" },
-      "overlay":  { "$value": 0.5,  "$description": "Modal backdrop opacity" },
-      "heavy":    { "$value": 0.85, "$description": "Strong overlay opacity" }
-    }
+    "opacity": "RESOLVED_OPACITY_OBJECT_OR_NULL"
   },
   "aesthetic": {
-    "summary": "Clean and professional with generous whitespace. A single strong blue accent anchors the palette against a near-white surface. The system conveys trust and precision without feeling sterile.",
-    "personality_tags": ["clean", "trustworthy", "precise", "minimal", "professional"],
-    "density": "comfortable",
-    "tone": "minimal"
+    "summary": "RESOLVED_AESTHETIC_SUMMARY",
+    "personality_tags": ["RESOLVED_TAGS"],
+    "density": "RESOLVED_DENSITY",
+    "tone": "RESOLVED_TONE"
   },
   "platform_notes": {
     "react": "Use CSS custom properties for color tokens to enable runtime theme switching. Apply --color-*: initial; in @theme to suppress Tailwind defaults. Font fallback stacks should be included in the CSS font-family declarations.",
