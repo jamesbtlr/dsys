@@ -59,11 +59,32 @@ Extract from state:
 - `platforms`: the `platforms` array
 - `name`: the project name
 
+Check for component manifest:
+```bash
+test -f ".dsys/{name}/component-manifest.json" && echo "HAS_MANIFEST" || echo "NO_MANIFEST"
+```
+
+If `HAS_MANIFEST`, validate it:
+```bash
+RESULT=$(npx ajv-cli validate --spec=draft2020 \
+  -s skills/dsys/schemas/component-manifest.schema.json \
+  -d ".dsys/{name}/component-manifest.json" 2>&1)
+if echo "$RESULT" | grep -qi "valid"; then
+  echo "VALID"
+else
+  echo "INVALID: $RESULT"
+fi
+```
+
+- If `VALID`: set `manifest_path = .dsys/{name}/component-manifest.json`
+- If `INVALID` or `NO_MANIFEST`: set `manifest_path = null` (generators will produce base-6 only)
+
 Display:
 ```
 Loading project: {name}
 Platforms: {platforms}
 Design system: .dsys/{name}/design-system.json
+{if manifest_path: }Component manifest: {manifest_path}{end if}
 ```
 
 ---
@@ -102,7 +123,8 @@ Task(
   agent: "skills/dsys/agents/react-generator.md",
   prompt: "design_system_path: .dsys/{name}/design-system.json
 output_root: .dsys/{name}/react/src/design-system/
-platforms: [\"react\"]"
+platforms: [\"react\"]
+{if manifest_path is not null: }component_manifest_path: {manifest_path}{end if}"
 )
 ```
 
@@ -112,7 +134,8 @@ Task(
   agent: "skills/dsys/agents/swiftui-generator.md",
   prompt: "design_system_path: .dsys/{name}/design-system.json
 output_root: .dsys/{name}/swiftui/Sources/DesignSystem/
-platforms: [\"swiftui\"]"
+platforms: [\"swiftui\"]
+{if manifest_path is not null: }component_manifest_path: {manifest_path}{end if}"
 )
 ```
 
@@ -168,6 +191,52 @@ Read `.dsys/{name}/design-system.json` and generate a self-contained HTML previe
 - `<!-- PERSONALITY_TAGS -->` → one `<span class="tag">` per `aesthetic.personality_tags` entry
 - `<!-- PALETTE_COLORS -->` → `<h3>` + `.color-grid` per primitive color group
 - `<!-- SEMANTIC_COLORS -->` → `<h3>` + `.semantic-group` per semantic role (Action, Surface, Text, Border, Feedback)
+- `<!-- DETECTED_COMPONENTS -->` → If `.dsys/{name}/component-manifest.json` exists on disk, read it. For each entry in `detected_components`, generate a **visual HTML mock** inside a `.component-group` div (the same wrapper class used by the base component previews above):
+
+  ```html
+  <div class="component-group">
+    <h4>{COMPONENT_NAME}</h4>
+    <!-- Visual mock HTML goes here — see rules below -->
+  </div>
+  ```
+
+  **How to generate the visual mock:** Read each component's `description`, `visual_properties`, `complexity`, and `token_usage` from the manifest. Build an approximate HTML representation that visually resembles the component.
+
+  **Rules for visual mocks:**
+  - Use ONLY `var(--surface-raised)`, `var(--text-primary)`, `var(--action-primary)`, `var(--border-default)`, etc. CSS custom properties for colors — **never raw hex values**
+  - Use `{{radius.*}}`, `{{space.*}}`, `{{type.*}}`, `{{weight.*}}` template tokens for sizing (these are already replaced by the placeholder mapping step)
+  - Use placeholder content that matches the component's domain context (e.g. team names for a MatchScoreCard, odds values for an OddsChip)
+  - Use colored `<div>`s with `border-radius:50%` for avatars and logos — no `<img>` tags
+  - Use emoji or single characters as stand-ins for icons
+  - All styling goes in inline `style` attributes — do not add new CSS classes
+
+  **Complexity guidelines:**
+  - **simple** → single element: a pill chip, a circular avatar, a small tag
+  - **compound** → 2-3 elements in a flex layout: icon + label row, avatar + name column, tab bar
+  - **complex** → card-like container with multiple sub-elements: header row + score + footer
+
+  **Example — OddsChip (simple):**
+  ```html
+  <div class="component-group">
+    <h4>OddsChip</h4>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:{{radius.md}};font-family:inherit;">
+        <span style="color:var(--text-muted);font-size:{{type.xs}};">1</span>
+        <span style="color:var(--text-primary);font-size:{{type.sm}};font-weight:{{weight.bold}};">1.84</span>
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:{{radius.md}};font-family:inherit;">
+        <span style="color:var(--text-muted);font-size:{{type.xs}};">X</span>
+        <span style="color:var(--text-primary);font-size:{{type.sm}};font-weight:{{weight.bold}};">4.2</span>
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--surface-inset);border:1px solid var(--border-default);border-radius:{{radius.md}};font-family:inherit;">
+        <span style="color:var(--text-muted);font-size:{{type.xs}};">2</span>
+        <span style="color:var(--text-primary);font-size:{{type.sm}};font-weight:{{weight.bold}};">3.74</span>
+      </div>
+    </div>
+  </div>
+  ```
+
+  If `detected_components` is empty or the manifest file doesn't exist, emit nothing (leave the marker empty — the template's JavaScript will hide the heading automatically).
 
 **Border-radius to component mapping** (already encoded in the template CSS):
 - **Buttons:** `{{radius.full}}` — pill-shaped
@@ -236,7 +305,7 @@ Display:
 Primary:    {action.primary.light value}
 Surface:    {surface.default.light value}
 Font:       {typography.font_family.sans value}
-Components: Button, Card, Input, Badge, Heading, Text
+Components: Button, Card, Input, Badge, Heading, Text{if manifest_path is not null and manifest has detected_components: , {DetectedName1}, {DetectedName2}, ...}
 
 Preview:    open .dsys/{name}/preview.html
 

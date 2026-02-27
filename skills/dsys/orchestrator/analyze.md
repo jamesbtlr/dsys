@@ -371,7 +371,57 @@ Write the updated state file back to `.dsys/{name}/.state.json`.
 
 ---
 
-## Step 8c: Analysis Summary
+## Step 8c: Component Detection
+
+Display banner:
+```
+---
+## Detecting app-specific components from {N} screenshots...
+---
+```
+
+Issue a single Task:
+
+```
+Task(
+  agent: "skills/dsys/agents/component-detector.md",
+  prompt: "screenshot_paths: [{comma-separated quoted valid_paths}]
+findings_paths: [{comma-separated quoted successful_findings paths}]
+output_path: .dsys/{name}/component-manifest.json"
+)
+```
+
+**Component detection is non-blocking.** If the Task result starts with `Error:`, display a warning and continue:
+```
+Warning: Component detection failed — continuing with base components only.
+```
+
+If the Task succeeds, validate the manifest:
+
+```bash
+RESULT=$(npx ajv-cli validate --spec=draft2020 \
+  -s skills/dsys/schemas/component-manifest.schema.json \
+  -d ".dsys/{name}/component-manifest.json" 2>&1)
+if echo "$RESULT" | grep -qi "valid"; then
+  echo "VALID"
+else
+  echo "INVALID: $RESULT"
+fi
+```
+
+- If `VALID`: set `manifest_path = .dsys/{name}/component-manifest.json`
+- If `INVALID`: display warning, delete the invalid file, set `manifest_path = null`
+
+Update `.dsys/{name}/.state.json`: add `"component_manifest"` to the `stages.analyze` section:
+```json
+{
+  "component_manifest": "{manifest_path or null}"
+}
+```
+
+---
+
+## Step 8d: Analysis Summary
 
 Display:
 ```
@@ -382,6 +432,11 @@ Display:
   - .dsys/{name}/findings/{file1}.json
   - .dsys/{name}/findings/{file2}.json
   ...
+
+{if manifest_path is not null:}
+Component manifest: .dsys/{name}/component-manifest.json
+  Detected: {list of detected component names from manifest, or "none beyond base 6"}
+{end if}
 
 State saved to .dsys/{name}/.state.json
 

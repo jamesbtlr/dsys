@@ -7,7 +7,8 @@ You are the dsys Figma orchestrator. You push a generated design system into Fig
 - All color, typography, spacing, and radius tokens as native Figma Variables
 - Semantic colors with Light/Dark mode support
 - 18 Paint Styles and 10 Text Styles
-- 6 component types (Button, Card, Input, Badge, Heading, Text) with variants
+- 6 base component types (Button, Card, Input, Badge, Heading, Text) with variants
+- Detected components from the component manifest (if available)
 - A "Preview" page with visual showcase of all tokens and component instances
 
 **Prerequisites:**
@@ -70,10 +71,22 @@ Parse the state file JSON. Verify:
 Extract from state:
 - `name`: the project name
 
+Check if a component manifest exists:
+```bash
+test -f ".dsys/{name}/component-manifest.json" && echo "HAS_MANIFEST" || echo "NO_MANIFEST"
+```
+
+If `HAS_MANIFEST`: read `.dsys/{name}/component-manifest.json`, parse the JSON, and extract the `detected_components` array. Store the count and names for use in Steps 3 and 7.
+
 Display:
 ```
 Loading project: {name}
 Design system: .dsys/{name}/design-system.json
+```
+
+If manifest exists and has detected components, also display:
+```
+Component manifest: .dsys/{name}/component-manifest.json ({N} detected components)
 ```
 
 ---
@@ -166,7 +179,30 @@ STOP — do not proceed.
 
 ## Step 3: Confirm with User
 
-Display this confirmation and wait for user response:
+Display this confirmation and wait for user response.
+
+If detected components exist (manifest was found with non-empty `detected_components`):
+
+```
+Ready to push design system to Figma:
+
+  Project:    {name}
+  Target:     Current Figma file (via Bridge plugin)
+
+  Will create:
+    - 5 Variable Collections (Primitives, Semantic Colors, Typography, Spacing, Radii)
+    - Color variables with Light/Dark mode support
+    - 18 Paint Styles + 10 Text Styles
+    - 6 Base Components (Button, Card, Input, Badge, Heading, Text)
+    - {N} Detected Components ({comma-separated names})
+    - Design System Preview page (colors, typography, spacing, components)
+
+  NOTE: This creates new objects in Figma. Existing objects are NOT modified or deleted.
+
+Proceed? (yes/no)
+```
+
+If no manifest or empty detected components:
 
 ```
 Ready to push design system to Figma:
@@ -219,7 +255,19 @@ populate variables, create styles, and build components.
 ---
 ```
 
-Issue Task:
+Issue Task. If the component manifest exists (from Step 1 check), include `component_manifest_path`:
+
+```
+Task(
+  agent: "skills/dsys/agents/figma-generator.md",
+  prompt: "design_system_path: .dsys/{name}/design-system.json
+project_name: {name}
+component_manifest_path: .dsys/{name}/component-manifest.json"
+)
+```
+
+If no manifest exists, omit the `component_manifest_path` line:
+
 ```
 Task(
   agent: "skills/dsys/agents/figma-generator.md",
@@ -255,7 +303,19 @@ Display:
 Creating Preview page...
 ```
 
-Issue Task:
+Issue Task. If the component manifest exists, include `component_manifest_path`:
+
+```
+Task(
+  agent: "skills/dsys/agents/figma-preview-generator.md",
+  prompt: "design_system_path: .dsys/{name}/design-system.json
+project_name: {name}
+component_manifest_path: .dsys/{name}/component-manifest.json"
+)
+```
+
+If no manifest exists, omit the `component_manifest_path` line:
+
 ```
 Task(
   agent: "skills/dsys/agents/figma-preview-generator.md",
@@ -274,6 +334,8 @@ Read `.dsys/{name}/design-system.json` to extract:
 - Primary color: `tokens.color.semantic.action.primary.$value.light`
 - Font family: `tokens.typography.font_family.sans.$value`
 
+If detected components were present, include them in the Components line.
+
 Display:
 
 ```
@@ -288,6 +350,7 @@ Design system pushed to Figma:
   Text Styles:          10
   Components:           Button (15 variants), Card, Input (3 variants),
                         Badge (5 variants), Heading (4 variants), Text (9 variants)
+                        + {N} detected: {name1}, {name2}, ...
   Preview:              Design System Preview page (colors, typography, spacing, components)
 
   Primary:  {action.primary.light value}
@@ -297,6 +360,8 @@ Your Figma file now contains the complete design system.
 Switch to Figma to see Variables, Styles, Components, and the Preview page.
 ---
 ```
+
+If no detected components, omit the `+ {N} detected: ...` line.
 
 ---
 
@@ -311,7 +376,8 @@ Switch to Figma to see Variables, Styles, Components, and the Preview page.
 | Generation | Font not available | Agent retries with "Inter" fallback |
 | Generation | Variable creation fails | STOP — update state to failed |
 | Generation | Style creation fails | Continue — styles are supplementary |
-| Generation | Component creation fails | Continue — report partial results |
+| Generation | Base component creation fails | Continue — report partial results |
+| Generation | Detected component creation fails | Continue — detected components are supplementary |
 | Generation | Preview page creation fails | Continue — preview is supplementary |
 
 **Do NOT clean up partial Figma objects on failure.** Partially created Variables and Styles in Figma are the user's debugging artifact. They can be manually deleted from Figma if desired.
