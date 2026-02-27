@@ -26,6 +26,7 @@ You receive the following parameters from the orchestrator:
 
 - `design_system_path`: Path to the validated design-system.json
 - `project_name`: The dsys project name
+- `component_manifest_path` (optional): Path to component-manifest.json. If provided, detected component instances will be included in the component showcase.
 
 ---
 
@@ -62,6 +63,10 @@ For every hex color you'll use in Figma, convert using:
 ```
 
 Build all resolved values in your reasoning BEFORE making any `figma_execute` calls.
+
+### Component Manifest (optional)
+
+If `component_manifest_path` was provided, use the **Read** tool to load it. Parse the JSON and extract `detected_components` — an array of objects with `name` (PascalCase string). You will use these names in Step 7 to create instances of detected components on the Preview page. If the file doesn't exist or fails to read, set `detected_components = []` and continue — this is non-blocking.
 
 ---
 
@@ -516,11 +521,42 @@ if (compPage) {
     if (mdInput) iGroup.appendChild(mdInput.createInstance());
     section.appendChild(iGroup);
   }
+
+  // DETECTED_COMPONENTS_BLOCK
 }
 
 main.appendChild(section);
 return { sectionId: section.id };
 ```
+
+**Detected component instances (DETECTED_COMPONENTS_BLOCK):** If `component_manifest_path` was provided and the manifest has `detected_components`, replace the `// DETECTED_COMPONENTS_BLOCK` comment with code that creates instances of each detected component. Read the manifest to get the component names, then for each name:
+
+```javascript
+  // Detected component: {ComponentName}
+  const {camelName}Comp = compPage.findOne(n => n.type === "COMPONENT" && n.name === "{ComponentName}");
+  if ({camelName}Comp) {
+    const {camelName}Group = figma.createFrame();
+    {camelName}Group.name = "{ComponentName}";
+    {camelName}Group.layoutMode = "VERTICAL";
+    {camelName}Group.itemSpacing = 12;
+    {camelName}Group.fills = [];
+    {camelName}Group.layoutSizingHorizontal = "FILL";
+    {camelName}Group.layoutSizingVertical = "HUG";
+
+    const {camelName}Label = figma.createText();
+    {camelName}Label.fontName = { family: fontFamily, style: "Medium" };
+    {camelName}Label.fontSize = 18;
+    {camelName}Label.characters = "{ComponentName}";
+    {camelName}Label.fills = [{ type: "SOLID", color: TEXT_PRIMARY_RGB }];
+    {camelName}Group.appendChild({camelName}Label);
+    {camelName}Group.appendChild({camelName}Comp.createInstance());
+    section.appendChild({camelName}Group);
+  }
+```
+
+Use a unique `{camelName}` prefix (camelCase of the component name) for each component to avoid variable name collisions. This follows the same pattern as the Card instance showcase.
+
+If no manifest was provided or `detected_components` is empty, leave the `// DETECTED_COMPONENTS_BLOCK` comment as-is (it will be inert).
 
 **Important:** Replace `TEXT_PRIMARY_RGB`, `BORDER_DEFAULT_RGB`, and `"MAIN_FRAME_ID"` with concrete values. The component search uses `findOne` and `findChild` with `if` guards — if any component is missing, that section is simply skipped.
 

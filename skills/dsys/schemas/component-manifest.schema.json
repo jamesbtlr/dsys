@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsys-tool/schemas/component-manifest.schema.json",
+  "title": "ComponentManifest",
+  "description": "Manifest of detected UI components from screenshot analysis. Written by the component-detector agent, consumed by generator agents.",
+  "type": "object",
+  "required": ["base_components", "detected_components"],
+  "additionalProperties": false,
+  "properties": {
+    "base_components": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["Button", "Card", "Input", "Badge", "Heading", "Text"]
+      },
+      "minItems": 6,
+      "maxItems": 6,
+      "description": "The 6 guaranteed base components."
+    },
+    "detected_components": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "visual_properties", "screenshots_observed", "complexity", "token_usage"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z][a-zA-Z0-9]+$",
+            "description": "PascalCase component name. Must not collide with base component names."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "description": "One-sentence description of what this component is and where it appears."
+          },
+          "visual_properties": {
+            "type": "object",
+            "description": "Key visual characteristics observed in screenshots.",
+            "properties": {
+              "shape": {
+                "type": "string",
+                "enum": ["rectangle", "rounded-rectangle", "circle", "pill", "custom"]
+              },
+              "background": {
+                "type": "string",
+                "enum": ["solid", "translucent", "gradient", "transparent", "image"]
+              },
+              "border": {
+                "type": "boolean"
+              },
+              "has_icon": {
+                "type": "boolean"
+              },
+              "has_text": {
+                "type": "boolean"
+              },
+              "size_variants": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "color_variants": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            },
+            "additionalProperties": true
+          },
+          "screenshots_observed": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1,
+            "description": "Basenames of screenshots where this component was observed."
+          },
+          "complexity": {
+            "type": "string",
+            "enum": ["simple", "compound", "complex"],
+            "description": "simple: single element. compound: 2-3 sub-elements. complex: 4+ sub-elements or interactive."
+          },
+          "token_usage": {
+            "type": "object",
+            "description": "Which design system token categories this component uses.",
+            "properties": {
+              "colors": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Semantic color tokens used, e.g. ['action-primary', 'surface-raised', 'text-muted']."
+              },
+              "typography": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Typography tokens used, e.g. ['text-sm', 'font-bold']."
+              },
+              "spacing": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Spacing patterns, e.g. ['gap-2', 'p-4']."
+              },
+              "radius": {
+                "type": ["string", "null"],
+                "description": "Border radius tier used: 'sm', 'md', 'lg', 'full', or null."
+              },
+              "shadow": {
+                "type": ["string", "null"],
+                "description": "Shadow elevation used: 'sm', 'md', 'lg', or null."
+              }
+            },
+            "additionalProperties": false
+          },
+          "props_hint": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "default": { "type": "string" },
+                "description": { "type": "string" }
+              }
+            },
+            "description": "Suggested props for this component. Generators may adjust."
+          }
+        }
+      }
+    }
+  }
+}

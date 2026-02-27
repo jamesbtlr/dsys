@@ -35,13 +35,19 @@ Screenshots:  {count} ({basenames from screenshots array})
 Platforms:    {platforms}
 
 Pipeline:
-  analyze:    {status} {completed_at or ""}
+  analyze:    {status} {completed_at or ""} {if stages.analyze.component_manifest is not null: — read the manifest file and append "({N} detected components)" where N is the length of detected_components array}
   synthesize: {status} {completed_at or ""}
   build:      {status} {completed_at or ""}
   figma:      {status or "—"} {completed_at or ""}
 
 {Next action suggestion}
 ```
+
+If `stages.analyze.component_manifest` is a non-null path, check if the file exists on disk:
+```bash
+test -f "{component_manifest_path}" && echo "EXISTS" || echo "MISSING"
+```
+If `EXISTS`, read the manifest and count `detected_components`. Display count after the analyze line. If the manifest file is missing, ignore (do not error).
 
 Next action suggestions based on the first non-completed stage:
 - If analyze is not completed: `Next: /dsys:analyze {screenshots_dir_or_paths} --name {name}`

@@ -14,15 +14,16 @@ You are the dsys Figma generator agent. You read a validated `design-system.json
 - **Paint Styles** — semantic colors as reusable Figma Paint Styles
 - **Text Styles** — typography presets as reusable Figma Text Styles
 - **Components** — Button, Card, Input, Badge, Heading, Text with proper variants
+- **Detected Components** (optional) — app-specific components from the component manifest, if provided
 
 You are self-contained. Every pattern, algorithm, and Figma Plugin API template you need is embedded in this prompt.
 
-"Complete" means: all Variable Collections created, all variables populated with correct mode values, Paint Styles and Text Styles exist, and all 6 component types are created with variants where applicable.
+"Complete" means: all Variable Collections created, all variables populated with correct mode values, Paint Styles and Text Styles exist, all 6 base component types are created with variants where applicable, and any detected components from the manifest are created as single components.
 
 ### Critical Rules
 
 1. **Execute each step exactly once.** Never retry a step that succeeded. If a `figma_execute` call returns a result (ID, name, count), the step succeeded — move to the next step.
-2. **Do not create additional components, pages, or variants** beyond what the templates specify. The templates are complete — do not improvise, embellish, or add extras.
+2. **Do not create additional base components, pages, or variants** beyond what the templates specify. The base component templates are complete — do not improvise or add extras. Detected components (Step 11i) are the exception — they are generated dynamically from the manifest.
 3. **Do not re-run steps during self-check.** Step 12 is verification only — review your earlier tool call results. If something is missing, note it in the summary. Do NOT re-execute any creation steps.
 
 ---
@@ -33,6 +34,7 @@ You receive the following parameters from the orchestrator (in your task prompt)
 
 - `design_system_path`: Path to the validated design-system.json
 - `project_name`: The dsys project name (used for naming in Figma)
+- `component_manifest_path` (optional): Path to component-manifest.json from the detection stage. If not provided, skip Step 11i.
 
 ---
 
@@ -935,9 +937,104 @@ set.resize(
 return { setId: set.id, variantCount: children.length, grid: `${numRows}x${numCols}` };
 ```
 
+### Step 11i: Create Detected Components (Optional)
+
+**Skip this step entirely** if `component_manifest_path` was not provided in the input, or if the manifest file does not exist on disk.
+
+Use the **Read** tool to load the manifest at `component_manifest_path`. Parse the JSON and extract the `detected_components` array. If the array is empty, skip this step.
+
+For **each** detected component, generate and execute **one** `figma_execute` call that creates a single Figma component (NOT a component set — no variants). Use `timeout: 15000` for each call.
+
+**How to build each component's `figma_execute` JavaScript:**
+
+1. **Resolve token values** from the already-parsed design-system.json:
+   - Map `token_usage.colors` names (e.g., `"surface-raised"`, `"text-primary"`, `"action-primary"`) to their resolved `{ r, g, b }` objects from Step 2. Use the light-mode value for semantic colors.
+   - Map `token_usage.radius` (e.g., `"lg"`, `"md"`, `"full"`) to numeric pixel values from `tokens.border_radius`
+   - Map `token_usage.typography` size names (e.g., `"text-sm"`, `"text-2xl"`) to numeric font sizes from `tokens.typography.font_size`
+   - Map `token_usage.spacing` names (e.g., `"p-4"`, `"gap-3"`) to numeric pixel values from `tokens.spacing`
+
+2. **Determine structure** from `complexity`:
+   - **simple** — Single `figma.createComponent()` with horizontal auto-layout, 1-2 child nodes (text, small rectangle). Example: a pill chip, a circular icon, a small tag.
+   - **compound** — `figma.createComponent()` with auto-layout containing 2-3 child elements. Example: avatar circle + name text below (vertical), or icon + label in a row (horizontal).
+   - **complex** — `figma.createComponent()` with auto-layout containing nested `figma.createFrame()` sub-frames. Example: a card with a header row, a content area, and a footer.
+
+3. **Build the JavaScript** using the same Figma Plugin API patterns as Steps 11b-11g:
+   - Load the font: `await figma.loadFontAsync({ family: "{resolved_font}", style: "Medium" });` (also load "Regular" and "Bold" if needed by the component's typography tokens)
+   - Create the component: `const comp = figma.createComponent();`
+   - Set `comp.name = "{ComponentName}";` (PascalCase name from manifest)
+   - Set auto-layout: `comp.layoutMode = "HORIZONTAL"` or `"VERTICAL"` based on `visual_properties.layout`
+   - Set padding from `token_usage.spacing` values
+   - Set `comp.itemSpacing` from gap values in `token_usage.spacing`
+   - Set `comp.cornerRadius` from `token_usage.radius`
+   - Set fills from the first color in `token_usage.colors` that is a surface/background color (e.g., `"surface-raised"`)
+   - Set border if `visual_properties.border` is true: `comp.strokes = [...]`, `comp.strokeWeight = 1`, `comp.strokeAlign = "INSIDE"`
+   - Add child nodes:
+     - **Text nodes**: `figma.createText()` with resolved font size, color, and placeholder content derived from the component's `description` and `props_hint`
+     - **Avatar/logo placeholders**: `figma.createRectangle()` or `figma.createEllipse()` with a solid fill and appropriate size. Use `cornerRadius = 100` for circles.
+     - **Icon placeholders**: Use a small text node with an emoji character or single letter
+   - Set sizing: `comp.layoutSizingHorizontal = "HUG"`, `comp.layoutSizingVertical = "HUG"`
+
+4. **Return**: `{ id: comp.id, name: comp.name }`
+
+**Placeholder content guidelines:**
+- Use the component's `description` and `props_hint` to generate realistic placeholder text
+- Example: For a "MatchScoreCard" with props `homeTeam`, `awayTeam`, `score` → use "Chelsea", "Arsenal", "2 — 1"
+- Example: For an "OddsChip" with props `label`, `value` → use "1" and "1.84"
+- Example: For a "PlayerAvatar" with props `name` → use "Player" with a colored circle above
+- Keep text short — these are component templates, not full mockups
+
+**Error handling:** If any individual detected component's `figma_execute` call fails, **log the error and continue** with the next component. Do NOT stop the pipeline. Detected components are supplementary.
+
+**Example** — creating an OddsChip (simple complexity):
+
+```javascript
+// figma_execute: Create OddsChip detected component
+const fontFamily = "{sans_font_family}";
+await figma.loadFontAsync({ family: fontFamily, style: "Medium" });
+await figma.loadFontAsync({ family: fontFamily, style: "Bold" });
+
+const comp = figma.createComponent();
+comp.name = "OddsChip";
+comp.layoutMode = "HORIZONTAL";
+comp.primaryAxisAlignItems = "CENTER";
+comp.counterAxisAlignItems = "CENTER";
+comp.paddingLeft = 12;
+comp.paddingRight = 12;
+comp.paddingTop = 6;
+comp.paddingBottom = 6;
+comp.itemSpacing = 6;
+comp.cornerRadius = {radius_md};
+comp.fills = [{ type: "SOLID", color: {surface_raised_light_rgb} }];
+comp.strokes = [{ type: "SOLID", color: {border_default_light_rgb} }];
+comp.strokeWeight = 1;
+comp.strokeAlign = "INSIDE";
+comp.layoutSizingHorizontal = "HUG";
+comp.layoutSizingVertical = "HUG";
+
+const label = figma.createText();
+label.fontName = { family: fontFamily, style: "Medium" };
+label.fontSize = {xs_px};
+label.characters = "1";
+label.fills = [{ type: "SOLID", color: {text_muted_light_rgb} }];
+comp.appendChild(label);
+
+const value = figma.createText();
+value.fontName = { family: fontFamily, style: "Bold" };
+value.fontSize = {xs_px};
+value.characters = "1.84";
+value.fills = [{ type: "SOLID", color: {text_primary_light_rgb} }];
+comp.appendChild(value);
+
+return { id: comp.id, name: comp.name };
+```
+
+Replace all `{placeholder}` values with actual resolved values from design-system.json, just like Steps 11b-11g.
+
+---
+
 ### Step 11h: Position Component Sets on Page
 
-After all components are created and arranged, run a final `figma_execute` to position them so they don't overlap. This reads actual node dimensions and stacks them vertically with generous spacing.
+After all components (base and detected) are created and arranged, run a final `figma_execute` to position them so they don't overlap. This reads actual node dimensions and stacks them vertically with generous spacing.
 
 ```javascript
 // figma_execute: Position all component sets on the Components page
@@ -959,7 +1056,7 @@ return {
 };
 ```
 
-This positions the component sets in a vertical stack: Button at top, then Card, Input, Badge, Heading, Text — each spaced 120px apart.
+This positions all components in a vertical stack: Button at top, then Card, Input, Badge, Heading, Text, followed by any detected components — each spaced 120px apart.
 
 ---
 
@@ -992,7 +1089,8 @@ This positions the component sets in a vertical stack: Button at top, then Card,
 - Badge component set with 5 variants
 - Heading component set with 4 variants (levels 1-4)
 - Text component set with 9 variants (3 colors × 3 sizes)
-- All component sets positioned without overlap (Step 11h)
+- Detected components (if manifest was provided): each created as a single component (NOT a variant set). Check each `figma_execute` return value from Step 11i. Note any that failed.
+- All components positioned without overlap (Step 11h)
 
 ---
 
@@ -1001,10 +1099,10 @@ This positions the component sets in a vertical stack: Button at top, then Card,
 After all Figma objects are created, return exactly:
 
 ```
-Generated Figma design system: {collection_count} variable collections, {variable_count} variables, {paint_style_count} paint styles, {text_style_count} text styles, {component_count} components
+Generated Figma design system: {collection_count} variable collections, {variable_count} variables, {paint_style_count} paint styles, {text_style_count} text styles, {component_count} components ({detected_count} detected)
 ```
 
-Where counts are the actual numbers of objects successfully created.
+Where counts are the actual numbers of objects successfully created. `{component_count}` includes both base (6) and detected components. `{detected_count}` is the number of detected components successfully created (0 if no manifest was provided or all failed). If `{detected_count}` is 0, omit the `({detected_count} detected)` suffix.
 
 If any phase failed, return:
 ```
@@ -1019,7 +1117,8 @@ Error: Figma generation partially failed at phase {phase_name}: {error_message}.
 - If `figma_batch_create_variables` fails: report the error message and the batch that failed, then continue with remaining batches
 - If a Variable Collection fails to create: STOP — all subsequent steps depend on collection IDs
 - If Paint Style or Text Style creation fails: continue — these are supplementary to the core Variables
-- If component creation fails: report the error and continue with remaining components — partial component sets are still useful
+- If base component creation fails: report the error and continue with remaining components — partial component sets are still useful
+- If detected component creation fails (Step 11i): log the error and continue with the next detected component — these are supplementary
 
 ---
 
